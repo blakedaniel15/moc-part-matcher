@@ -1,12 +1,10 @@
-import { readFileSync } from "node:fs";
 import { neon } from "@neondatabase/serverless";
 import { requireEnv } from "../lib/config";
+import { SCHEMA_SQL } from "./schema";
 
 async function main() {
   const sql = neon(requireEnv("DATABASE_URL"));
-  const ddl = readFileSync("db/schema.sql", "utf8");
-  // neon http supports multiple statements via the `query` form; run as one batch.
-  await sql.query(ddl);
+  await sql.query(SCHEMA_SQL);
   console.log("Migration applied.");
 }
 
