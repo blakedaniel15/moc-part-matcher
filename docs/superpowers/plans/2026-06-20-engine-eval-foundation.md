@@ -16,6 +16,7 @@
 - Two distinct axes, never conflated: *structural signal* (`STRONG`/`POSSIBLE`/`UNLIKELY`, a prior on number shape) vs *match outcome* (`matchType` × `confidence`).
 - All tests and eval run with `RecordedAdjudicator` — zero API calls, deterministic, CI-safe.
 - Node 20+. Use ES modules.
+- **Verification runs in the cloud, not locally.** No local Node is assumed. Every task's `npm test` / `npm run eval` step is verified by GitHub Actions CI on push (Task 12), and the app is built/deployed by Vercel from the repo. "Expected: PASS" means the CI job for that push is green. A developer with local Node may run the same commands locally, but it is not required.
 
 ---
 
@@ -1380,6 +1381,60 @@ git commit -m "feat: eval harness with accuracy report (deterministic core)"
 
 ---
 
+### Task 12: GitHub Actions CI (runs tests + eval in the cloud)
+
+Makes the cloud the source of truth for "it works" — no local Node needed. Runs on every push and PR.
+
+**Files:**
+- Create: `.github/workflows/ci.yml`
+
+**Interfaces:**
+- Consumes: `npm test`, `npm run eval` scripts (Task 2).
+- Produces: a green/red CI check on every push; the regenerated `eval/report.md` printed in the job log.
+
+- [ ] **Step 1: Create `.github/workflows/ci.yml`**
+
+```yaml
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm test
+      - name: Accuracy report (eval)
+        run: npm run eval
+      - name: Upload accuracy report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accuracy-report
+          path: eval/report.md
+```
+
+- [ ] **Step 2: Push the branch and confirm CI is green**
+
+Run:
+```bash
+git add .github/workflows/ci.yml
+git commit -m "ci: run tests + eval on every push"
+git push -u origin rebuild/foundation
+```
+Expected: the **CI** check on the pushed commit passes (tests green, eval prints the accuracy report and uploads `eval/report.md` as a build artifact). View it in the GitHub Actions tab or on the PR.
+
+- [ ] **Step 3 (one-time): connect Vercel**
+
+In the Vercel dashboard, import the GitHub repo (Framework preset: **Next.js**). No build config needed beyond defaults. Each push to `rebuild/foundation` gets a preview deployment; merging to `main` deploys production. (App routes/UI land in Plan 3; for now this just wires the pipeline.)
+
+---
+
 ## Self-Review
 
 **Spec coverage:**
@@ -1398,4 +1453,5 @@ git commit -m "feat: eval harness with accuracy report (deterministic core)"
 ## Notes carried to Plan 2
 - The canonical catalog foundation already exists at `data/archetypes.json` (206 products: 177 from the official MOC catalog Excel + 29 regional extras; 3 name conflicts resolved with `officialName` retained for traceability). Plan 2 seeds this into the Postgres `archetypes` table; the eval already loads it directly.
 - `DEALER_ALIASES` still needs porting to `/data` (or the DB) in Plan 2.
+- Kit names in `data/archetypes.json` are cleaned: component part numbers (e.g. `(01201, 01271, 10431)`) are stripped from `manufacturerPart` and stored in a structured `components` field (52 entries). The `AnthropicAdjudicator` prompt in Plan 2 builds from `manufacturerPart`, so embedded numbers can't pollute the model's number reasoning. Plan 2's adjudicator must still validate any returned `mocPartNumber` against a real `barePartNumber` (the existing `findArchetype` does this).
 - `AnthropicAdjudicator` (structured tool-use output, retries, verdict caching) + `--live` eval flag land in Plan 2.

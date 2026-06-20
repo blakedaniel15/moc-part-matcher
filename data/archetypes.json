@@ -63,15 +63,24 @@
   },
   {
     "barePartNumber": "01161",
-    "manufacturerPart": "01161 - Radiator Flush Kits, Two Pack (01091, 01111)",
+    "manufacturerPart": "01161 - Radiator Flush Kits, Two Pack",
     "incentive": 10,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01091",
+      "01111"
+    ]
   },
   {
     "barePartNumber": "01164",
-    "manufacturerPart": "01164 - Radiator Flush Kit-Three Pack (01041, 01091, 01111)",
+    "manufacturerPart": "01164 - Radiator Flush Kit-Three Pack",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01041",
+      "01091",
+      "01111"
+    ]
   },
   {
     "barePartNumber": "01171",
@@ -297,21 +306,33 @@
   },
   {
     "barePartNumber": "01691",
-    "manufacturerPart": "01691 - Emission Cleaner Kit - gasoline engines (01271, 01281)",
+    "manufacturerPart": "01691 - Emission Cleaner Kit - gasoline engines",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01271",
+      "01281"
+    ]
   },
   {
     "barePartNumber": "01711",
-    "manufacturerPart": "01711 - Oil Change Flush Kit (01171, 01211)",
+    "manufacturerPart": "01711 - Oil Change Flush Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01171",
+      "01211"
+    ]
   },
   {
     "barePartNumber": "01741",
-    "manufacturerPart": "01741 - Decarb Flush Kit (01271, 01121)",
+    "manufacturerPart": "01741 - Decarb Flush Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01121",
+      "01271"
+    ]
   },
   {
     "barePartNumber": "01801",
@@ -324,8 +345,12 @@
     "manufacturerPart": "01861 - KIT, FUEL-SYSTEM & AIR-INTAKE 2-PART",
     "incentive": 0,
     "source": "official",
-    "officialName": "01861 - Carbon Cleaner Kit (01271, 10431)",
-    "resolved": "kept-ours"
+    "officialName": "01861 - Carbon Cleaner Kit",
+    "resolved": "kept-ours",
+    "components": [
+      "01271",
+      "10431"
+    ]
   },
   {
     "barePartNumber": "01871",
@@ -347,21 +372,33 @@
   },
   {
     "barePartNumber": "01931",
-    "manufacturerPart": "01931 - Induction Kit (01061, 01121)",
+    "manufacturerPart": "01931 - Induction Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01061",
+      "01121"
+    ]
   },
   {
     "barePartNumber": "01941",
-    "manufacturerPart": "01941 - ATF Cleaner/Supplement Kit (01181, 01191)",
+    "manufacturerPart": "01941 - ATF Cleaner/Supplement Kit",
     "incentive": 10,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01181",
+      "01191"
+    ]
   },
   {
     "barePartNumber": "01971",
-    "manufacturerPart": "01971 - A/C Service Kit (01331, 10501)",
+    "manufacturerPart": "01971 - A/C Service Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01331",
+      "10501"
+    ]
   },
   {
     "barePartNumber": "02001",
@@ -389,9 +426,13 @@
   },
   {
     "barePartNumber": "02161",
-    "manufacturerPart": "02161 - Power Steering 2 Pack Kit (01231, 01151)",
+    "manufacturerPart": "02161 - Power Steering 2 Pack Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01151",
+      "01231"
+    ]
   },
   {
     "barePartNumber": "02211",
@@ -407,51 +448,87 @@
   },
   {
     "barePartNumber": "02301",
-    "manufacturerPart": "02301 - Premium Cooling System Kit (01091, 01421, 01431)",
+    "manufacturerPart": "02301 - Premium Cooling System Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01091",
+      "01421",
+      "01431"
+    ]
   },
   {
     "barePartNumber": "02311",
-    "manufacturerPart": "02311 - Diesel Service Kit (01441, 01451)",
+    "manufacturerPart": "02311 - Diesel Service Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01441",
+      "01451"
+    ]
   },
   {
     "barePartNumber": "02321",
-    "manufacturerPart": "02321 - Air Intake & Emission Cleaner Kit (01201, 01271, 10431)",
+    "manufacturerPart": "02321 - Air Intake & Emission Cleaner Kit",
     "incentive": 10,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01201",
+      "01271",
+      "10431"
+    ]
   },
   {
     "barePartNumber": "02381",
-    "manufacturerPart": "02381 - Silence Brakes Kit (10381, 01401)",
+    "manufacturerPart": "02381 - Silence Brakes Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01401",
+      "10381"
+    ]
   },
   {
     "barePartNumber": "02421",
-    "manufacturerPart": "02421 - Premium Intermediate Menu Kit (01061, 01211, 61131)",
+    "manufacturerPart": "02421 - Premium Intermediate Menu Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01061",
+      "01211",
+      "61131"
+    ]
   },
   {
     "barePartNumber": "02531",
-    "manufacturerPart": "02531 - ATF Exchange Kit (01031, 01171)",
+    "manufacturerPart": "02531 - ATF Exchange Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01031",
+      "01171"
+    ]
   },
   {
     "barePartNumber": "02561",
-    "manufacturerPart": "02561 - A/C Premium Service Kit (10521, 01331)",
+    "manufacturerPart": "02561 - A/C Premium Service Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01331",
+      "10521"
+    ]
   },
   {
     "barePartNumber": "02591",
-    "manufacturerPart": "02591 - Premium Air Intake & Fuel Inj. Svc. Kit (01121, 01201, 01271)",
+    "manufacturerPart": "02591 - Premium Air Intake & Fuel Inj. Svc. Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01121",
+      "01201",
+      "01271"
+    ]
   },
   {
     "barePartNumber": "02661",
@@ -461,87 +538,146 @@
   },
   {
     "barePartNumber": "02671",
-    "manufacturerPart": "02671 - Standard Fuel System Service Kit (01121, 10431)",
+    "manufacturerPart": "02671 - Standard Fuel System Service Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01121",
+      "10431"
+    ]
   },
   {
     "barePartNumber": "02781",
-    "manufacturerPart": "02781 - PREMIUM MENU KIT II~ (01211, 01271)",
+    "manufacturerPart": "02781 - PREMIUM MENU KIT II",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01211",
+      "01271"
+    ]
   },
   {
     "barePartNumber": "02791",
-    "manufacturerPart": "02791 - Minor Service Kit II (01061, 01211)",
+    "manufacturerPart": "02791 - Minor Service Kit II",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01061",
+      "01211"
+    ]
   },
   {
     "barePartNumber": "02871",
-    "manufacturerPart": "02871 - Battery Service Kit (01501, 01301)",
+    "manufacturerPart": "02871 - Battery Service Kit",
     "incentive": 10,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01301",
+      "01501"
+    ]
   },
   {
     "barePartNumber": "02911",
-    "manufacturerPart": "02911 - Reflect-A-Coat Headlight Restoration Single Use Kit (10171, 04127)",
+    "manufacturerPart": "02911 - Reflect-A-Coat Headlight Restoration Single Use Kit",
     "incentive": 10,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "04127",
+      "10171"
+    ]
   },
   {
     "barePartNumber": "02951",
-    "manufacturerPart": "02951 - Ultima Power Steering 2 Pack Flush Kit Green (06121, 01151)",
+    "manufacturerPart": "02951 - Ultima Power Steering 2 Pack Flush Kit Green",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01151",
+      "06121"
+    ]
   },
   {
     "barePartNumber": "02981",
-    "manufacturerPart": "02981 - DIESEL EGR CLEANING KIT (2X01201, 10441)",
+    "manufacturerPart": "02981 - DIESEL EGR CLEANING KIT",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01201",
+      "10441"
+    ]
   },
   {
     "barePartNumber": "03051",
-    "manufacturerPart": "03051 - TBB Fuel Kit (01061, 01201)",
+    "manufacturerPart": "03051 - TBB Fuel Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01061",
+      "01201"
+    ]
   },
   {
     "barePartNumber": "03061",
-    "manufacturerPart": "03061 - E.G.R. Service Kit (3 pack) (2-01201, 01271)",
+    "manufacturerPart": "03061 - E.G.R. Service Kit (3 pack)",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01201",
+      "01271"
+    ]
   },
   {
     "barePartNumber": "03111",
-    "manufacturerPart": "03111 - Power Steering Service Kit Red (2pk) (01151, 01561)",
+    "manufacturerPart": "03111 - Power Steering Service Kit Red (2pk)",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01151",
+      "01561"
+    ]
   },
   {
     "barePartNumber": "03371",
-    "manufacturerPart": "03371 - Prem Fuel Induction Kit (01271, 01281, 10131)",
+    "manufacturerPart": "03371 - Prem Fuel Induction Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01271",
+      "01281",
+      "10131"
+    ]
   },
   {
     "barePartNumber": "03381",
-    "manufacturerPart": "03381 - Premium EFI Kit (01271, 01121, 10131)",
+    "manufacturerPart": "03381 - Premium EFI Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01121",
+      "01271",
+      "10131"
+    ]
   },
   {
     "barePartNumber": "03391",
-    "manufacturerPart": "03391 - Fuel Induction Kit (01061, 01281, 10131)",
+    "manufacturerPart": "03391 - Fuel Induction Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01061",
+      "01281",
+      "10131"
+    ]
   },
   {
     "barePartNumber": "03441",
-    "manufacturerPart": "03441 - Optimizer Fuel Kit-2 Pack (16501, 10431)",
+    "manufacturerPart": "03441 - Optimizer Fuel Kit-2 Pack",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "10431",
+      "16501"
+    ]
   },
   {
     "barePartNumber": "03451",
@@ -563,45 +699,74 @@
   },
   {
     "barePartNumber": "03511",
-    "manufacturerPart": "03511 - OPTIMIZER 2 PACK KIT (01271, 16501)",
+    "manufacturerPart": "03511 - OPTIMIZER 2 PACK KIT",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01271",
+      "16501"
+    ]
   },
   {
     "barePartNumber": "03601",
-    "manufacturerPart": "03601 - FUEL INDUCTION & THROTTLE-BODY CLNR KIT~ (01201, 01061, 10431)",
+    "manufacturerPart": "03601 - FUEL INDUCTION & THROTTLE-BODY CLNR KIT",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01061",
+      "01201",
+      "10431"
+    ]
   },
   {
     "barePartNumber": "03641",
-    "manufacturerPart": "03641 - Gear Guard and Limited Slip (2-04141, 01491)",
+    "manufacturerPart": "03641 - Gear Guard and Limited Slip",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01491",
+      "04141"
+    ]
   },
   {
     "barePartNumber": "03651",
-    "manufacturerPart": "03651 - TRANSFER CASE KIT (2- 04152)",
+    "manufacturerPart": "03651 - TRANSFER CASE KIT",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "04152"
+    ]
   },
   {
     "barePartNumber": "03721",
-    "manufacturerPart": "03721 - MAJOR FUEL INDUCTION KIT (01061,  01121, 01201)",
+    "manufacturerPart": "03721 - MAJOR FUEL INDUCTION KIT",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01061",
+      "01121",
+      "01201"
+    ]
   },
   {
     "barePartNumber": "03771",
-    "manufacturerPart": "03771 - TECH GRADE POWER STEERING TWO-PK KIT (06181, 01151)",
+    "manufacturerPart": "03771 - TECH GRADE POWER STEERING TWO-PK KIT",
     "incentive": 10,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01151",
+      "06181"
+    ]
   },
   {
     "barePartNumber": "03821",
-    "manufacturerPart": "03821 - KIT, HD DIESEL SERVICE, 2 PART (01442 & 01452)",
+    "manufacturerPart": "03821 - KIT, HD DIESEL SERVICE, 2 PART",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01442",
+      "01452"
+    ]
   },
   {
     "barePartNumber": "04011",
@@ -845,15 +1010,24 @@
   },
   {
     "barePartNumber": "05221",
-    "manufacturerPart": "05221 - DIFFERENTIAL SERVICE KIT-2QT W/LS (2-01481, 01491)",
+    "manufacturerPart": "05221 - DIFFERENTIAL SERVICE KIT-2QT W/LS",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01481",
+      "01491"
+    ]
   },
   {
     "barePartNumber": "05231",
-    "manufacturerPart": "05231 - EGR Diesel Service Kit (2-01201, 2-01451, 1-10141)",
+    "manufacturerPart": "05231 - EGR Diesel Service Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01201",
+      "01451",
+      "10141"
+    ]
   },
   {
     "barePartNumber": "05301",
@@ -863,9 +1037,16 @@
   },
   {
     "barePartNumber": "05401",
-    "manufacturerPart": "05401 - KIT,PRE-OWND VH PROTECTION KIT..AUTOMATIC (01011, 01021, 01111, 01151, 04191)",
+    "manufacturerPart": "05401 - KIT,PRE-OWND VH PROTECTION KIT..AUTOMATIC",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01011",
+      "01021",
+      "01111",
+      "01151",
+      "04191"
+    ]
   },
   {
     "barePartNumber": "05451",
@@ -881,15 +1062,31 @@
   },
   {
     "barePartNumber": "05501",
-    "manufacturerPart": "05501 - KIT,PREMIUM PRE-OWNED VEHICLE PROT AUTO (01011, 01021, 01111, 01151, 04191, 06201)",
+    "manufacturerPart": "05501 - KIT,PREMIUM PRE-OWNED VEHICLE PROT AUTO",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01011",
+      "01021",
+      "01111",
+      "01151",
+      "04191",
+      "06201"
+    ]
   },
   {
     "barePartNumber": "05511",
-    "manufacturerPart": "05511 - KIT,PREMIUM PRE-OWNED VEHCLE PROT MANUAL (01011, 01021, 01111, 01141, 01151, 06201)",
+    "manufacturerPart": "05511 - KIT,PREMIUM PRE-OWNED VEHCLE PROT MANUAL",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01011",
+      "01021",
+      "01111",
+      "01141",
+      "01151",
+      "06201"
+    ]
   },
   {
     "barePartNumber": "05521",
@@ -899,9 +1096,14 @@
   },
   {
     "barePartNumber": "05561",
-    "manufacturerPart": "05561 - Premium Fuel & Combustion Chamber Clean Kit (10131, 16501, 01271)",
+    "manufacturerPart": "05561 - Premium Fuel & Combustion Chamber Clean Kit",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01271",
+      "10131",
+      "16501"
+    ]
   },
   {
     "barePartNumber": "05581",
@@ -923,39 +1125,66 @@
   },
   {
     "barePartNumber": "05661",
-    "manufacturerPart": "05661 - A/C ODOR & EVAPORATOR KIT~ (10501, 10521)",
+    "manufacturerPart": "05661 - A/C ODOR & EVAPORATOR KIT",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "10501",
+      "10521"
+    ]
   },
   {
     "barePartNumber": "05741",
-    "manufacturerPart": "05741 - PREMIUM GDI SERVICE KIT (16501, 04351, 01271)",
+    "manufacturerPart": "05741 - PREMIUM GDI SERVICE KIT",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01271",
+      "04351",
+      "16501"
+    ]
   },
   {
     "barePartNumber": "05781",
-    "manufacturerPart": "05781 - EXTENDED LIFE OIL CHANGE SERVICE KIT - 2 PK (06571, 01241)",
+    "manufacturerPart": "05781 - EXTENDED LIFE OIL CHANGE SERVICE KIT - 2 PK",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01241",
+      "06571"
+    ]
   },
   {
     "barePartNumber": "05791",
-    "manufacturerPart": "05791 - EXTENDED LIFE OIL CHANGE SERVICE KIT - 3 PK. (06571, 01271, 01241)",
+    "manufacturerPart": "05791 - EXTENDED LIFE OIL CHANGE SERVICE KIT - 3 PK.",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01241",
+      "01271",
+      "06571"
+    ]
   },
   {
     "barePartNumber": "05871",
-    "manufacturerPart": "05871 - KIT, 2-PACK, PREMIUM COOLANT PROTECTION (01421, 01431)",
+    "manufacturerPart": "05871 - KIT, 2-PACK, PREMIUM COOLANT PROTECTION",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01421",
+      "01431"
+    ]
   },
   {
     "barePartNumber": "05881",
-    "manufacturerPart": "05881 - GDI & INJECTOR KIT (01121, 01271, 04351)",
+    "manufacturerPart": "05881 - GDI & INJECTOR KIT",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "01121",
+      "01271",
+      "04351"
+    ]
   },
   {
     "barePartNumber": "05911",
@@ -971,9 +1200,14 @@
   },
   {
     "barePartNumber": "05941",
-    "manufacturerPart": "05941 - KIT, FUEL SERVICE, MP PREMIUM, 3-PART (04311, 04321, 04331)",
+    "manufacturerPart": "05941 - KIT, FUEL SERVICE, MP PREMIUM, 3-PART",
     "incentive": 0,
-    "source": "official"
+    "source": "official",
+    "components": [
+      "04311",
+      "04321",
+      "04331"
+    ]
   },
   {
     "barePartNumber": "05951",
