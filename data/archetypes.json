@@ -1,0 +1,1242 @@
+[
+  {
+    "barePartNumber": "01011",
+    "manufacturerPart": "01011 - MOTOR OIL CONDITIONER 8 oz.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01021",
+    "manufacturerPart": "01021 - UNIVERSAL FUEL CONDITIONER",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01031",
+    "manufacturerPart": "01031 - AUTOMATIC-TRANSMISSION-FLUID CONDITIONER 8 oz.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01061",
+    "manufacturerPart": "01061 - Fuel-Injector Cleaner 8 oz.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01071",
+    "manufacturerPart": "01071 - E-SHIELD, 8OZ",
+    "incentive": 5,
+    "source": "official",
+    "officialName": "01071 - ULTRA85; HIGH ETHANOL FUEL ADDITIVE",
+    "resolved": "kept-ours"
+  },
+  {
+    "barePartNumber": "01091",
+    "manufacturerPart": "01091 - COOLING-SYSTEM FAST FLUSH 8 oz.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01111",
+    "manufacturerPart": "01111 - COOLING-SYSTEM TREATMENT 8 oz.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01121",
+    "manufacturerPart": "01121 - Fuel-Injector Flush 12 oz.",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01141",
+    "manufacturerPart": "01141 - EXTREME-PRESSURE LUBRICANT 7 oz.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01151",
+    "manufacturerPart": "01151 - POWER-STEERING-FLUID CONDITIONER 6 oz.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01161",
+    "manufacturerPart": "01161 - Radiator Flush Kits, Two Pack (01091, 01111)",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01164",
+    "manufacturerPart": "01164 - Radiator Flush Kit-Three Pack (01041, 01091, 01111)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01171",
+    "manufacturerPart": "01171 - MULTI-CLEAN 12oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01181",
+    "manufacturerPart": "01181 - PREMIUM ATF CLEANER, 11OZ",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "01191",
+    "manufacturerPart": "01191 - PREMIUM ATF SUPPLEMENT~",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01201",
+    "manufacturerPart": "01201 - DOUBLE CLEAN 12oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01211",
+    "manufacturerPart": "01211 - PREMIUM ENGINE TREATMENT 11oz",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01221",
+    "manufacturerPart": "01221 - PREMIUM DIESEL ENGINE TREATMENT",
+    "incentive": 4,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01222",
+    "manufacturerPart": "01222 - PREMIUM DIESEL ENGINE TREATMENT",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01231",
+    "manufacturerPart": "01231 - POWER STEERING FLUID EXCHANGE, 64OZ",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "01241",
+    "manufacturerPart": "01241 - MULTI-CLEAN MAX",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01242",
+    "manufacturerPart": "01242 - MULTI-CLEAN MAX~",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01261",
+    "manufacturerPart": "01261 - FUEL-INDUCTION SYSTEM CLEANER",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01271",
+    "manufacturerPart": "01271 - Fuel-System Flush 12oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01281",
+    "manufacturerPart": "01281 - Vacu Flush\u00ae 12oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01291",
+    "manufacturerPart": "01291 - Premium Fuel Guard",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01301",
+    "manufacturerPart": "01301 - BATTERY-TERMINAL PROTECTOR 2 PACK",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01310",
+    "manufacturerPart": "01310 - BULK BATTERY-TERMINAL PROTECTORS 100 SETS PER JAR",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01331",
+    "manufacturerPart": "01331 - A/C QUIET\u2122 2 oz.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01341",
+    "manufacturerPart": "01341 - A/C QUIET 8 oz.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01361",
+    "manufacturerPart": "01361 - A/C QUIET MAX",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01368",
+    "manufacturerPart": "01368 - A/C QUIET MAX, 8OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01401",
+    "manufacturerPart": "01401 - QUIET BRAKES\u2122 1oz",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01421",
+    "manufacturerPart": "01421 - COOL OFF\u2122 12oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01431",
+    "manufacturerPart": "01431 - OOLING SYSTEM MULTI TREATMENT, 12OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01441",
+    "manufacturerPart": "01441 - DIESEL PURGE 12oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01442",
+    "manufacturerPart": "01442 - DIESEL PURGE, QUART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01451",
+    "manufacturerPart": "01451 - Advanced Diesel Treatment 12oz",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01452",
+    "manufacturerPart": "01452 - ADVANCED DIESEL TREATMENT-ADT ^",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01471",
+    "manufacturerPart": "01471 - GEAR GUARD PLUS, 75W-85, 32OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01481",
+    "manufacturerPart": "01481 - Gear Guard\u2122 32 oz.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01487",
+    "manufacturerPart": "01487 - Gear Guard 16 Gallon",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01491",
+    "manufacturerPart": "01491 - LIMITED-SLIP CONCENTRATE 7oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01501",
+    "manufacturerPart": "01501 - BATTERY CLEANER & LEAK DETECTOR, 2OZ",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "01561",
+    "manufacturerPart": "01561 - Power Steering Service Solution - Red 64oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01581",
+    "manufacturerPart": "01581 - GREASE,CALIPER-SINGLE APPLICATION",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01601",
+    "manufacturerPart": "01601 - BANISH, RODENT DETERRENT, 8OZ",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01603",
+    "manufacturerPart": "01603 - BANISH, RODENT DETERRENT, 1GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01661",
+    "manufacturerPart": "01661 - KIT, CARBON CLEANER FLUSH 3-PART",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "01691",
+    "manufacturerPart": "01691 - Emission Cleaner Kit - gasoline engines (01271, 01281)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01711",
+    "manufacturerPart": "01711 - Oil Change Flush Kit (01171, 01211)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01741",
+    "manufacturerPart": "01741 - Decarb Flush Kit (01271, 01121)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01801",
+    "manufacturerPart": "01801 - KIT, MP POWER RESTORE FUEL",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "01861",
+    "manufacturerPart": "01861 - KIT, FUEL-SYSTEM & AIR-INTAKE 2-PART",
+    "incentive": 0,
+    "source": "official",
+    "officialName": "01861 - Carbon Cleaner Kit (01271, 10431)",
+    "resolved": "kept-ours"
+  },
+  {
+    "barePartNumber": "01871",
+    "manufacturerPart": "01871 - KIT, MP POWER CLEAN FUEL",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "01891",
+    "manufacturerPart": "01891 - KIT, SERVICE-MENU, 2-PART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01901",
+    "manufacturerPart": "01901 - KIT, QUIET BRAKES 2-PART",
+    "incentive": 4,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "01931",
+    "manufacturerPart": "01931 - Induction Kit (01061, 01121)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01941",
+    "manufacturerPart": "01941 - ATF Cleaner/Supplement Kit (01181, 01191)",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "01971",
+    "manufacturerPart": "01971 - A/C Service Kit (01331, 10501)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02001",
+    "manufacturerPart": "02001 - KIT, MENU",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "02021",
+    "manufacturerPart": "02021 - DECARB THROTTLE BODY KIT 3PK",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "02031",
+    "manufacturerPart": "02031 - KIT, TRANSMISSION SERVICE, 2-PART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02041",
+    "manufacturerPart": "02041 - KIT, THROTTLE-BODY",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "02161",
+    "manufacturerPart": "02161 - Power Steering 2 Pack Kit (01231, 01151)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02211",
+    "manufacturerPart": "02211 - KIT, PREMIUM OIL SERVICE",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "02271",
+    "manufacturerPart": "02271 - KIT, USED-CAR 4-PART",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "02301",
+    "manufacturerPart": "02301 - Premium Cooling System Kit (01091, 01421, 01431)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02311",
+    "manufacturerPart": "02311 - Diesel Service Kit (01441, 01451)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02321",
+    "manufacturerPart": "02321 - Air Intake & Emission Cleaner Kit (01201, 01271, 10431)",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02381",
+    "manufacturerPart": "02381 - Silence Brakes Kit (10381, 01401)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02421",
+    "manufacturerPart": "02421 - Premium Intermediate Menu Kit (01061, 01211, 61131)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02531",
+    "manufacturerPart": "02531 - ATF Exchange Kit (01031, 01171)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02561",
+    "manufacturerPart": "02561 - A/C Premium Service Kit (10521, 01331)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02591",
+    "manufacturerPart": "02591 - Premium Air Intake & Fuel Inj. Svc. Kit (01121, 01201, 01271)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02661",
+    "manufacturerPart": "02661 - KIT, PREMIUM FUEL-SYSTEM SERVICE 3-PART",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "02671",
+    "manufacturerPart": "02671 - Standard Fuel System Service Kit (01121, 10431)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02781",
+    "manufacturerPart": "02781 - PREMIUM MENU KIT II~ (01211, 01271)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02791",
+    "manufacturerPart": "02791 - Minor Service Kit II (01061, 01211)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02871",
+    "manufacturerPart": "02871 - Battery Service Kit (01501, 01301)",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02911",
+    "manufacturerPart": "02911 - Reflect-A-Coat Headlight Restoration Single Use Kit (10171, 04127)",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02951",
+    "manufacturerPart": "02951 - Ultima Power Steering 2 Pack Flush Kit Green (06121, 01151)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "02981",
+    "manufacturerPart": "02981 - DIESEL EGR CLEANING KIT (2X01201, 10441)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03051",
+    "manufacturerPart": "03051 - TBB Fuel Kit (01061, 01201)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03061",
+    "manufacturerPart": "03061 - E.G.R. Service Kit (3 pack) (2-01201, 01271)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03111",
+    "manufacturerPart": "03111 - Power Steering Service Kit Red (2pk) (01151, 01561)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03371",
+    "manufacturerPart": "03371 - Prem Fuel Induction Kit (01271, 01281, 10131)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03381",
+    "manufacturerPart": "03381 - Premium EFI Kit (01271, 01121, 10131)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03391",
+    "manufacturerPart": "03391 - Fuel Induction Kit (01061, 01281, 10131)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03441",
+    "manufacturerPart": "03441 - Optimizer Fuel Kit-2 Pack (16501, 10431)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03451",
+    "manufacturerPart": "03451 - KIT, PREMIUM BRAKE FLUID & LUBE 3-PART",
+    "incentive": 10,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "03461",
+    "manufacturerPart": "03461 - KIT, PREMIUM BRAKE CALIPER LUBE 2-PART",
+    "incentive": 5,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "03471",
+    "manufacturerPart": "03471 - KIT, RAC,HEADLIGHT,PROFESSIONAL VERSION, 7-PART",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "03511",
+    "manufacturerPart": "03511 - OPTIMIZER 2 PACK KIT (01271, 16501)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03601",
+    "manufacturerPart": "03601 - FUEL INDUCTION & THROTTLE-BODY CLNR KIT~ (01201, 01061, 10431)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03641",
+    "manufacturerPart": "03641 - Gear Guard and Limited Slip (2-04141, 01491)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03651",
+    "manufacturerPart": "03651 - TRANSFER CASE KIT (2- 04152)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03721",
+    "manufacturerPart": "03721 - MAJOR FUEL INDUCTION KIT (01061,  01121, 01201)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03771",
+    "manufacturerPart": "03771 - TECH GRADE POWER STEERING TWO-PK KIT (06181, 01151)",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "03821",
+    "manufacturerPart": "03821 - KIT, HD DIESEL SERVICE, 2 PART (01442 & 01452)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04011",
+    "manufacturerPart": "04011 - KIT, COF PROTECTION, 3-PART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04113",
+    "manufacturerPart": "04113 - Multi-Vehicle Synthetic ATF",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04114",
+    "manufacturerPart": "04114 - Multi-Vehicle Synthetic ATF Fluid 3gal",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04116",
+    "manufacturerPart": "04116 - MULTI-VEHICLE SYNTHETIC ATF FLUID 55GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04123",
+    "manufacturerPart": "04123 - Engine Flush Solution",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04133",
+    "manufacturerPart": "04133 - PREMIUM ATF LV, 1GAL",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04134",
+    "manufacturerPart": "04134 - PREMIUM ATF LV, 3 GAL+~",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04136",
+    "manufacturerPart": "04136 - PREMIUM ATF LV, 55GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04141",
+    "manufacturerPart": "04141 - Gear Guard 75W-90",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04146",
+    "manufacturerPart": "04146 - GEAR GUARD, 75W-90, 55GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04147",
+    "manufacturerPart": "04147 - Gear Guard 75W-90, drum",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04152",
+    "manufacturerPart": "04152 - ULTRA SHIFT",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04172",
+    "manufacturerPart": "04172 - MULTI-VEHICLE SYNTHETIC CVT FLUID",
+    "incentive": 2,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04173",
+    "manufacturerPart": "04173 - MULTI-VEHICLE SYNTHETIC CVT FLUID ^",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04176",
+    "manufacturerPart": "04176 - MULTI-VEHICLE SYNTHETIC CVT FLUID, 55GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04181",
+    "manufacturerPart": "04181 - UNIVERSAL CVT CONDITIONER",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04203",
+    "manufacturerPart": "04203 - MULTI-VEHICLE ATF-BLUE, 1 GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04211",
+    "manufacturerPart": "04211 - HP TRANSMISSION FLUID, QT.",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04213",
+    "manufacturerPart": "04213 - MOC SYNTHETIC ATF HP, 1GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04216",
+    "manufacturerPart": "04216 - MOC SYNTHETIC ATF HP, 55gal",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04261",
+    "manufacturerPart": "04261 - MOC SYNTHETIC DCT FLUID, 32OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04271",
+    "manufacturerPart": "04271 - GEAR GUARD PLUS 75W-90",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04272",
+    "manufacturerPart": "04272 - GEAR GUARD PLUS 75W-90, 1/2GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04276",
+    "manufacturerPart": "04276 - GEAR GUARD PLUS 75W-90, 55GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04277",
+    "manufacturerPart": "04277 - GEAR GUARD PLUS 75W-90, 16GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04281",
+    "manufacturerPart": "04281 - GEAR GUARD PLUS 75W-140",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04287",
+    "manufacturerPart": "04287 - GEAR GUARD PLUS 75W-140",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04291",
+    "manufacturerPart": "04291 - MTF, MANUAL TRANSMISSION FLUID, GL4, 75W-90, 30OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04321",
+    "manufacturerPart": "04321 - ENHANCE, 16OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04361",
+    "manufacturerPart": "04361 - EGR SYSTEM CLEANER",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04371",
+    "manufacturerPart": "04371 - CAT CONVERTER & O2 SENSOR CLEANER, 10OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04381",
+    "manufacturerPart": "04381 - ULTRA SHIFT LV, 32OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04421",
+    "manufacturerPart": "04421 - MP BOOST, 10OZ",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04441",
+    "manufacturerPart": "04441 - MP PROTECT, COOLING SYSTEM PROTECTION, 10OZ",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04451",
+    "manufacturerPart": "04451 - COOLING SYSTEM PROTECTOR, 12OZ",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "04461",
+    "manufacturerPart": "04461 - SHYFT, 12OZ",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04474",
+    "manufacturerPart": "04474 - SYNTHETIC ATF HP (CLEAR), 3GAL",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "04481",
+    "manufacturerPart": "04481 - DIRECT - GDI FUEL INJECTOR CLEANER, 10OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05161",
+    "manufacturerPart": "05161 - Nitrogen Caps - Combo Pack",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05191",
+    "manufacturerPart": "05191 - Nitrogen Now Composite Cap Kit No Benefit",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05221",
+    "manufacturerPart": "05221 - DIFFERENTIAL SERVICE KIT-2QT W/LS (2-01481, 01491)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05231",
+    "manufacturerPart": "05231 - EGR Diesel Service Kit (2-01201, 2-01451, 1-10141)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05301",
+    "manufacturerPart": "05301 - KIT, FRESH A/C & EVAP CLEANER, 2-PART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05401",
+    "manufacturerPart": "05401 - KIT,PRE-OWND VH PROTECTION KIT..AUTOMATIC (01011, 01021, 01111, 01151, 04191)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05451",
+    "manufacturerPart": "05451 - KIT, FUEL&COMBUSTION CHAMBER CLEANER-LOW VOC 3-PART",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "05481",
+    "manufacturerPart": "05481 - KIT, PRE-OWNED PROTECTION, AUTOMATIC, 4",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05501",
+    "manufacturerPart": "05501 - KIT,PREMIUM PRE-OWNED VEHICLE PROT AUTO (01011, 01021, 01111, 01151, 04191, 06201)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05511",
+    "manufacturerPart": "05511 - KIT,PREMIUM PRE-OWNED VEHCLE PROT MANUAL (01011, 01021, 01111, 01141, 01151, 06201)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05521",
+    "manufacturerPart": "05521 - KIT, DELUXE PRE-OWNED, 5-PART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05561",
+    "manufacturerPart": "05561 - Premium Fuel & Combustion Chamber Clean Kit (10131, 16501, 01271)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05581",
+    "manufacturerPart": "05581 - KIT, EV/HEV BRAKE, 3-PART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05591",
+    "manufacturerPart": "05591 - EV/HEV PREMIUM BRAKE SERVICE 4PK",
+    "incentive": 5,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "05601",
+    "manufacturerPart": "05601 - KIT, EV/HEV QUIET BRAKE SERVICE 5-PART",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "05661",
+    "manufacturerPart": "05661 - A/C ODOR & EVAPORATOR KIT~ (10501, 10521)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05741",
+    "manufacturerPart": "05741 - PREMIUM GDI SERVICE KIT (16501, 04351, 01271)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05781",
+    "manufacturerPart": "05781 - EXTENDED LIFE OIL CHANGE SERVICE KIT - 2 PK (06571, 01241)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05791",
+    "manufacturerPart": "05791 - EXTENDED LIFE OIL CHANGE SERVICE KIT - 3 PK. (06571, 01271, 01241)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05871",
+    "manufacturerPart": "05871 - KIT, 2-PACK, PREMIUM COOLANT PROTECTION (01421, 01431)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05881",
+    "manufacturerPart": "05881 - GDI & INJECTOR KIT (01121, 01271, 04351)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05911",
+    "manufacturerPart": "05911 - KIT, AIRBORNE DEFENSE, 2-PART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05921",
+    "manufacturerPart": "05921 - ACTIVE ENGINE CLEANING, 2-PART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05941",
+    "manufacturerPart": "05941 - KIT, FUEL SERVICE, MP PREMIUM, 3-PART (04311, 04321, 04331)",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05951",
+    "manufacturerPart": "05951 - KIT, SERVICE, HEV PREMIUM, 4-PART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "05971",
+    "manufacturerPart": "05971 - KIT, FUEL, MP MAINTENANCE, 2-PART",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06001",
+    "manufacturerPart": "06001 - BRAKE FLUID, DOT 3 - HEAVY DUTY, 53OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06002",
+    "manufacturerPart": "06002 - Brake Fluid D.O.T. 3 - Heavy Duty 32 oz.",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06011",
+    "manufacturerPart": "06011 - PREMIUM PLUS BRAKE FLUID DOT 4 53 oz.",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06012",
+    "manufacturerPart": "06012 - Brake Fluid D.O.T. 4 Heavy Duty 32 oz.",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06014",
+    "manufacturerPart": "06014 - BRAKE FLUID-DOT 4-PREMIUM PLUS-48 OZ~",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06021",
+    "manufacturerPart": "06021 - BRAKE FLUID, DOT 5.1 - ULTRA, 53 OZ",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "06022",
+    "manufacturerPart": "06022 - BRAKE FLUID, DOT 5.1 - ULTRA 32 OZ",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "06032",
+    "manufacturerPart": "06032 - BRAKE FLUID, DOT 4-LV, 32OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06121",
+    "manufacturerPart": "06121 - Ultima Power Steering Fluid - Green 64oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06172",
+    "manufacturerPart": "06172 - ELECTRIC POWER - STEERING FLUID",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06181",
+    "manufacturerPart": "06181 - TECH GRADE POWER STEERING SERVICE FLUID",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06201",
+    "manufacturerPart": "06201 - ARTIC BLAST, SINGLE APPLICATION",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06301",
+    "manufacturerPart": "06301 - FRESH SOLUTION, 10ML",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06561",
+    "manufacturerPart": "06561 - HIGH-PERFORMANCE MOTOR OIL CONDITIONER, 8OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "06571",
+    "manufacturerPart": "06571 - ADVANCED ENGINE TREATMENT (EXTND LIFE)",
+    "incentive": 5,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10071",
+    "manufacturerPart": "10071 - GLASS CLEANER",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10081",
+    "manufacturerPart": "10081 - PARTS WASH, 13OZ",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "10131",
+    "manufacturerPart": "10131 - Premium Throttle Body",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10141",
+    "manufacturerPart": "10141 - Premium Throttle Body 16oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10161",
+    "manufacturerPart": "10161 - MOISTURE SHIELD, *** DISCONTINUED",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10281",
+    "manufacturerPart": "10281 - AEROSOL, TACK-IT",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10291",
+    "manufacturerPart": "10291 - Carpet Stain Remover 16oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10381",
+    "manufacturerPart": "10381 - Brake & Parts Cleaner 20oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10431",
+    "manufacturerPart": "10431 - Throttle Body & Air Intake Cleaner 6oz",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10441",
+    "manufacturerPart": "10441 - Throttle Body & Air Intake Cleaner 16oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10501",
+    "manufacturerPart": "10501 - A/C Odor Treatment 8oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10507",
+    "manufacturerPart": "10507 - FRESH A/C, 2OZ",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10521",
+    "manufacturerPart": "10521 - Evaporator Core Cleaner 16oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10601",
+    "manufacturerPart": "10601 - Odor Eliminator 20oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10651",
+    "manufacturerPart": "10651 - ODOR-B-GONE FOGGER",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10751",
+    "manufacturerPart": "10751 - AEROSOL, DPF FOAM CLEANER, 13OZ",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10881",
+    "manufacturerPart": "10881 - Fuel Injector Flush 20oz",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10901",
+    "manufacturerPart": "10901 - DISSOLVE-IT",
+    "incentive": 0,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10951",
+    "manufacturerPart": "10951 - MASS AIR FLOW SENSOR CLEANER",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "10971",
+    "manufacturerPart": "10971 - CHARGE PORT CLEANER, AEROSOL, 2OZ",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "16501",
+    "manufacturerPart": "16501 - Optimizer",
+    "incentive": 10,
+    "source": "official"
+  },
+  {
+    "barePartNumber": "61121",
+    "manufacturerPart": "61121 - CLEAN TABS",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "61131",
+    "manufacturerPart": "61131 - WINDSHIELD WASHER SOLVENT, 8OZ",
+    "incentive": 2,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "61141",
+    "manufacturerPart": "61141 - ALL-SEASON WASHER SOLVENT, 11OZ",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "62941",
+    "manufacturerPart": "62941 - MP VISION GLASS TREATMENT",
+    "incentive": 10,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "62951",
+    "manufacturerPart": "62951 - VISION GLASS TREATMENT, 0.75OZ",
+    "incentive": 0,
+    "source": "regional"
+  },
+  {
+    "barePartNumber": "M02421",
+    "manufacturerPart": "M02421 - KIT, PREMIUM INTERMEDIATE",
+    "incentive": 0,
+    "source": "regional"
+  }
+]

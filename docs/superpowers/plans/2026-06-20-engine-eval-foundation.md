@@ -1293,17 +1293,12 @@ async function main() {
   const labels = labelsFromExport(exp);
   const { heldOut } = splitHeldOut(labels, 0.2, 42);
 
-  // Catalog comes from the export's customArchetypes plus any approved manufacturerPart names.
-  // For Plan 1 the canonical MOC_MAPPINGS live in /data (added in Plan 2); here we reconstruct
-  // a catalog from the labels' expected bare numbers + approved manufacturerPart strings.
-  const catalogMap = new Map<string, Archetype>();
-  for (const a of exp.approvedMappings ?? []) {
-    if (a.barePartNumber) catalogMap.set(a.barePartNumber, { barePartNumber: a.barePartNumber, manufacturerPart: a.manufacturerPart ?? a.barePartNumber, incentive: a.incentive ?? 0 });
-  }
-  for (const c of exp.customArchetypes ?? []) {
-    catalogMap.set(c.barePartNumber, { barePartNumber: c.barePartNumber, manufacturerPart: c.manufacturerPart, incentive: c.incentive ?? 0 });
-  }
-  const catalog = [...catalogMap.values()];
+  // Canonical catalog foundation: the official MOC catalog merged with regional extras,
+  // built from "MOC Official Product Catalog.xlsx" → data/archetypes.json (206 products).
+  // Using the full real catalog gives the fuzzy passes (2b trailing-suffix, 2c zero-pad)
+  // the complete MOC number space to match against, not a subset reconstructed from labels.
+  const catalogRaw = JSON.parse(readFileSync("data/archetypes.json", "utf8")) as Array<{ barePartNumber: string; manufacturerPart: string; incentive?: number }>;
+  const catalog: Archetype[] = catalogRaw.map(a => ({ barePartNumber: a.barePartNumber, manufacturerPart: a.manufacturerPart, incentive: a.incentive ?? 0 }));
 
   const dmsType = detectDms(heldOut.map(l => l.sku));
   const parts: Part[] = heldOut.map(l => {
@@ -1401,5 +1396,6 @@ git commit -m "feat: eval harness with accuracy report (deterministic core)"
 **Type consistency:** `parseSku`/`detectDms`, `analyzeStructure`, `fuzzyMatch` (returns `{archetype,confidence,reason,matchPass}`), `exactMatch` (tagged union `approved|canonical|divergence`), `Adjudicator.adjudicate(parts) → AdjudicationVerdict[]` keyed by `sku`, `runPipeline(parts, ctx) → MatchResult[]`, and the eval `LabeledExample`/`Metrics` shapes are used consistently across tasks.
 
 ## Notes carried to Plan 2
-- The eval reconstructs the catalog from the export; Plan 2 adds canonical `MOC_MAPPINGS`/`DEALER_ALIASES` as `/data` files seeded into Postgres, and the eval should then load the real catalog.
+- The canonical catalog foundation already exists at `data/archetypes.json` (206 products: 177 from the official MOC catalog Excel + 29 regional extras; 3 name conflicts resolved with `officialName` retained for traceability). Plan 2 seeds this into the Postgres `archetypes` table; the eval already loads it directly.
+- `DEALER_ALIASES` still needs porting to `/data` (or the DB) in Plan 2.
 - `AnthropicAdjudicator` (structured tool-use output, retries, verdict caching) + `--live` eval flag land in Plan 2.
