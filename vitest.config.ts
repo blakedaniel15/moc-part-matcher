@@ -4,6 +4,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["engine/**/*.test.ts", "eval/**/*.test.ts"],
+    include: [
+      "engine/**/*.test.ts",
+      "eval/**/*.test.ts",
+      "lib/**/*.test.ts",
+      "db/**/*.test.ts",
+      "app/**/*.test.ts",
+    ],
   },
 });
