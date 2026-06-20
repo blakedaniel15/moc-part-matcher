@@ -37,3 +37,26 @@ describe("fuzzyMatch", () => {
     expect(fuzzyMatch(part("76620-T20-A01", "76620-T20-A01"), catalog)).toBeNull();
   });
 });
+
+describe("fuzzyMatch 2b store-prefix guard", () => {
+  const cat2b: Archetype[] = [
+    { barePartNumber: "04461", manufacturerPart: "04461 - SHYFT, 12OZ", incentive: 10 },
+    { barePartNumber: "02301", manufacturerPart: "02301 - COOLING KIT", incentive: 0 },
+    { barePartNumber: "01201", manufacturerPart: "01201 - DOUBLE CLEAN", incentive: 0 },
+  ];
+  const p2b = (sku: string, bare: string, name: string): Part => ({
+    sku, partName: name, makeCode: null, barePartNumber: bare, dmsType: "R&R",
+    structural: { score: 0, label: "UNLIKELY", detail: "" },
+  });
+
+  it("keeps legit store-prefixed match (repeated-digit prefix)", () => {
+    const r = fuzzyMatch(p2b("8888804461", "8888804461", "TRANSMISSION SERV"), cat2b);
+    expect(r?.archetype.barePartNumber).toBe("04461");
+  });
+  it("rejects dash-segmented OEM number", () => {
+    expect(fuzzyMatch(p2b("TO48068-02301", "TO48068-02301", "ARM SUB-ASSY"), cat2b)).toBeNull();
+  });
+  it("rejects make-code + non-store-like prefix (NUT LOCK != DOUBLE CLEAN)", () => {
+    expect(fuzzyMatch(p2b("SU9418801201", "9418801201", "NUT LOCK"), cat2b)).toBeNull();
+  });
+});

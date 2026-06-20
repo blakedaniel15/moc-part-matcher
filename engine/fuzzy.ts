@@ -1,6 +1,16 @@
 import type { Part, Archetype, Confidence } from "./types";
 import { numericCore, skuComplexity, isMechanicalName } from "./heuristics";
 
+// A "store-like" prefix is what dealers prepend before the full MOC number:
+// all-identical digits (88888, 00000) or a short run (≤4). An OEM part segment
+// (e.g. 94188, or a dash-segmented catalog number) is NOT store-like — guarding
+// against it stops OEM numbers that coincidentally end in a MOC number from matching.
+function isStoreLikePrefix(prefix: string): boolean {
+  if (prefix.length === 0) return true;
+  if (prefix.length <= 4) return true;
+  return /^(\d)\1*$/.test(prefix); // all identical digits
+}
+
 // Fuzzy numeric match with three sub-strategies:
 //   2a numeric-core    — strips non-digits and compares cores
 //   2b trailing-suffix — last 5 digits match a MOC archetype (store-prefix formats)
@@ -28,14 +38,20 @@ export function fuzzyMatch(
       reason = "Numeric core matches MOC " + m.barePartNumber + " after stripping formatting";
     }
   }
-  // 2b: trailing suffix — last 5 digits exactly match a MOC archetype.
+  // 2b: trailing suffix — last 5 digits exactly match a MOC archetype, but ONLY when
+  // the leading digits look like a store number (not an OEM part segment), and the
+  // SKU is not a dash-segmented OEM catalog number.
   if (!archetype && !hasMidLetters && digits.length > 5) {
+    const dashSegmented = /\d{3,}-\d{3,}/.test(part.barePartNumber);
     const tail5 = digits.slice(-5);
-    const m = catalog.find((a) => a.barePartNumber === tail5);
-    if (m) {
-      archetype = m;
-      matchPass = "2b";
-      reason = "MOC number " + m.barePartNumber + " found as trailing suffix (store prefix stripped)";
+    const prefix = digits.slice(0, -5);
+    if (!dashSegmented && isStoreLikePrefix(prefix)) {
+      const m = catalog.find((a) => a.barePartNumber === tail5);
+      if (m) {
+        archetype = m;
+        matchPass = "2b";
+        reason = "MOC number " + m.barePartNumber + " found as trailing suffix (store prefix stripped)";
+      }
     }
   }
   // 2c: zero-pad — if bare number is exactly 4 digits, prepend "0" and check.
