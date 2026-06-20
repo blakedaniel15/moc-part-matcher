@@ -1237,12 +1237,18 @@ export function labelsFromExport(exp: any): LabeledExample[] {
     out.push({ sku: a.dmsSku, partName: a.dmsPartName ?? "", expectedBare: a.barePartNumber });
   }
   for (const b of exp.blockedSkus ?? []) {
-    out.push({ sku: b.sku ?? b, partName: "", expectedBare: null });
+    // Carry the part name through — the engine needs it to REASON about negatives
+    // in cold mode (e.g. mechanical-name detection), not just memorize the block list.
+    out.push({ sku: typeof b === "string" ? b : b.sku, partName: typeof b === "string" ? "" : (b.partName ?? ""), expectedBare: null });
   }
   for (const skus of Object.values(exp.dealerRejections ?? {})) {
     for (const sku of skus as string[]) out.push({ sku, partName: "", expectedBare: null });
   }
-  return out;
+  // Dedupe by SKU (the real store re-approves the same SKU multiple times; a DB
+  // unique constraint collapses these later). Last write wins.
+  const bySku = new Map<string, LabeledExample>();
+  for (const ex of out) bySku.set(ex.sku.toUpperCase(), ex);
+  return [...bySku.values()];
 }
 
 // Deterministic LCG shuffle keyed by seed — no Math.random (reproducible).
@@ -1305,14 +1311,31 @@ async function main() {
     return { sku: l.sku, partName: l.partName, makeCode: parsed.makeCode, barePartNumber: parsed.barePartNumber, dmsType, structural: analyzeStructure(parsed.barePartNumber) };
   });
 
-  // Deterministic: no AI verdicts recorded => AI pass yields UNMATCHED. Measures the
-  // deterministic passes (exact+fuzzy) in isolation, which is the trustworthy core.
-  const results = await runPipeline(parts, { catalog, approved: exp.approvedMappings ?? [], blockedSkus: (exp.blockedSkus ?? []).map((b: any) => b.sku ?? b), dealerRejections: [], dealerBrand: "all", adjudicator: new RecordedAdjudicator({}) });
+  // Score TWO modes (both deterministic — no AI verdicts recorded, so the AI pass
+  // yields UNMATCHED and this isolates the exact+fuzzy reasoning core):
+  //
+  //   COLD       — engine gets NO memorized approved/blocked lists. Measures whether
+  //                fuzzy/structural/prefilter REASON each row correctly. This is the
+  //                honest generalization number, and it will expose where the fuzzy
+  //                trailing-suffix pass over-matches OEM segment numbers.
+  //   PRODUCTION — engine gets the approved + blocked lists, as users experience it.
+  //                Higher, but partly tautological (it memorized these rows).
+  const blockedList = (exp.blockedSkus ?? []).map((b: any) => (typeof b === "string" ? b : b.sku));
 
-  const predicted = results.map(r => ({ sku: r.sku, predictedBare: r.matchedPartNumber }));
-  const m = computeMetrics(predicted, heldOut);
+  const coldResults = await runPipeline(parts, { catalog, approved: [], blockedSkus: [], dealerRejections: [], dealerBrand: "all", adjudicator: new RecordedAdjudicator({}) });
+  const prodResults = await runPipeline(parts, { catalog, approved: exp.approvedMappings ?? [], blockedSkus: blockedList, dealerRejections: [], dealerBrand: "all", adjudicator: new RecordedAdjudicator({}) });
 
-  const byType = (t: string) => results.filter(r => r.matchType === t).length;
+  const score = (results: typeof coldResults) => computeMetrics(results.map(r => ({ sku: r.sku, predictedBare: r.matchedPartNumber })), heldOut);
+  const cold = score(coldResults);
+  const prod = score(prodResults);
+
+  // Cold-mode false positives are the most useful artifact: rows the engine matched
+  // that the human labeled "not MOC" (expectedBare === null).
+  const negSkus = new Set(heldOut.filter(l => l.expectedBare == null).map(l => l.sku.toUpperCase()));
+  const coldFalsePos = coldResults.filter(r => negSkus.has(r.sku.toUpperCase()) && r.matchedPartNumber != null)
+    .map(r => `  - ${r.sku} (${r.partName}) → wrongly matched ${r.matchedPartNumber} [${r.matchType}/${r.confidence}]`);
+
+  const line = (m: typeof cold) => `P ${(m.precision*100).toFixed(1)}% · R ${(m.recall*100).toFixed(1)}% · F1 ${(m.f1*100).toFixed(1)}%  (TP ${m.truePos} · FP ${m.falsePos} · FN ${m.falseNeg})`;
   const report = [
     "# MOC Matcher — Accuracy Report",
     "",
@@ -1321,17 +1344,18 @@ async function main() {
     "## Ground-truth caveat",
     "Labels are derived from past in-tool human decisions (approved/blocked/rejected). They are a **biased sample**: they only cover rows that reached the review queue, and were produced with the old tool's help. This report scores a **20% held-out split** the engine was not tuned against. A subset should still receive fresh human audit before these numbers are treated as production truth.",
     "",
-    "## Overall (held-out set, deterministic passes)",
-    `- Examples: ${heldOut.length}`,
-    `- Precision: ${(m.precision * 100).toFixed(1)}%`,
-    `- Recall: ${(m.recall * 100).toFixed(1)}%`,
-    `- F1: ${(m.f1 * 100).toFixed(1)}%`,
-    `- TP ${m.truePos} · FP ${m.falsePos} · FN ${m.falseNeg}`,
+    `Held-out examples: ${heldOut.length} (${heldOut.filter(l => l.expectedBare != null).length} positive, ${heldOut.filter(l => l.expectedBare == null).length} negative)`,
     "",
-    "## Match-type distribution",
-    `- EXACT ${byType("EXACT")} · FUZZY ${byType("FUZZY")} · AI ${byType("AI")} · UNMATCHED ${byType("UNMATCHED")}`,
+    "## Cold accuracy — engine reasoning, NO memorized lists (the honest number)",
+    `- ${line(cold)}`,
     "",
-    "> Note: with no recorded AI verdicts, the AI pass contributes nothing here by design — this isolates the deterministic exact+fuzzy core. Run `npm run eval --live` (Plan 2) to include the AI pass.",
+    "## Production accuracy — with approved + blocked lists (what users see)",
+    `- ${line(prod)}`,
+    "",
+    "## Cold-mode false positives (OEM parts the engine wrongly matched)",
+    coldFalsePos.length ? coldFalsePos.join("\n") : "  (none)",
+    "",
+    "> These are exactly the rows the production block list is currently papering over. They show where the fuzzy trailing-suffix pass needs tightening — the kind of finding that justifies the eval harness. With no recorded AI verdicts the AI pass is inert here by design; `npm run eval --live` (Plan 2) adds it.",
     "",
   ].join("\n");
 
