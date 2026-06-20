@@ -21,9 +21,13 @@ describe("fuzzyMatch", () => {
     expect(r).toMatchObject({ matchPass: "2b", confidence: "MEDIUM" });
     expect(r!.archetype.barePartNumber).toBe("04461");
   });
-  it("2c zero-pad on 4-digit => MEDIUM", () => {
+  it("4-digit dropped-zero number resolves to the zero-padded archetype", () => {
+    // "2301" → "02301". Resolved via the 2a numeric-core path, which shadows the
+    // 2c zero-pad path: numericCore collapses the leading zero either way, so 2a
+    // matches first. (Faithful to the original pipeline.)
     const r = fuzzyMatch(part("2301", "2301", "ATF FLUSH"), catalog);
-    expect(r).toMatchObject({ matchPass: "2c", confidence: "MEDIUM" });
+    expect(r!.archetype.barePartNumber).toBe("02301");
+    expect(r!.confidence).toBe("HIGH");
   });
   it("2a clean numeric core => HIGH", () => {
     const r = fuzzyMatch(part("04461", "4461"), catalog);
