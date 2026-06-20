@@ -1,7 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { runPipeline } from "../engine/pipeline";
 import { RecordedAdjudicator } from "../engine/adjudicator";
-import { AnthropicAdjudicator } from "../engine/anthropicAdjudicator";
 import { analyzeStructure } from "../engine/structural";
 import { parseSku, detectDms } from "../engine/parseSku";
 import { requireEnv } from "../lib/config";
@@ -59,8 +58,13 @@ async function main() {
   // `npm run eval -- --live` swaps in the real Anthropic adjudicator for a fresh measurement
   // that includes the AI pass (requires ANTHROPIC_API_KEY).
   const live = process.argv.includes("--live");
+  // Dynamic import on the live path only — keeps the default (deterministic) eval's
+  // import graph free of the Anthropic adjudicator and node:crypto.
   const adjudicator = live
-    ? new AnthropicAdjudicator({ apiKey: requireEnv("ANTHROPIC_API_KEY"), model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6" })
+    ? new (await import("../engine/anthropicAdjudicator")).AnthropicAdjudicator({
+        apiKey: requireEnv("ANTHROPIC_API_KEY"),
+        model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
+      })
     : new RecordedAdjudicator({});
 
   const coldResults = await runPipeline(parts, {
