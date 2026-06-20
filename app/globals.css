@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* RGB channels (space-separated) so Tailwind opacity modifiers work: bg-accent/10 etc. */
+  --background: 248 250 252; /* #f8fafc */
+  --foreground: 2 6 23; /* #020617 */
+  --card: 255 255 255;
+  --primary: 15 23 42; /* #0f172a */
+  --primary-foreground: 255 255 255;
+  --accent: 3 105 161; /* #0369a1 */
+  --accent-foreground: 255 255 255;
+  --muted: 232 236 241; /* #e8ecf1 */
+  --muted-foreground: 100 116 139; /* #64748b */
+  --border: 226 232 240; /* #e2e8f0 */
+  --ring: 15 23 42;
+  --destructive: 220 38 38; /* #dc2626 */
+  --destructive-foreground: 255 255 255;
+
+  /* Match-type semantic language */
+  --exact: 5 150 105; /* #059669 emerald */
+  --fuzzy: 217 119 6; /* #d97706 amber */
+  --ai: 124 58 237; /* #7c3aed violet */
+  --unmatched: 100 116 139; /* #64748b slate */
+}
+
+* {
+  border-color: rgb(var(--border));
+}
+
+body {
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
