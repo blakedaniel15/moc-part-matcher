@@ -7,3 +7,4 @@ dist/
 .env
 .env.local
 eval/report.md
+next-env.d.ts
