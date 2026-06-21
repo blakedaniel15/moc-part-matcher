@@ -52,6 +52,39 @@ export async function loadCatalogFull(sql: SqlExec): Promise<{ barePartNumber: s
   return rows.map((r) => ({ barePartNumber: r.bare_part_number, manufacturerPart: r.manufacturer_part, source: r.source }));
 }
 
+// Save a finished file's results snapshot (the run history).
+export async function saveRunSnapshot(
+  sql: SqlExec,
+  r: { runId: string; dealer: string; fileName: string; total: number; matched: number; review: number; unmatched: number; snapshot: unknown }
+): Promise<void> {
+  await sql`insert into run_snapshots (run_id, dealer, file_name, total, matched, review, unmatched, snapshot)
+    values (${r.runId}, ${r.dealer}, ${r.fileName}, ${r.total}, ${r.matched}, ${r.review}, ${r.unmatched}, ${JSON.stringify(r.snapshot)}::jsonb)
+    on conflict (run_id) do update set dealer = excluded.dealer, file_name = excluded.file_name, total = excluded.total,
+      matched = excluded.matched, review = excluded.review, unmatched = excluded.unmatched, snapshot = excluded.snapshot, ran_at = now()`;
+}
+
+export async function loadRunSummaries(
+  sql: SqlExec
+): Promise<{ runId: string; dealer: string; fileName: string; total: number; matched: number; review: number; unmatched: number; ranAt: string }[]> {
+  const rows = await sql`select run_id, dealer, file_name, total, matched, review, unmatched, ran_at from run_snapshots order by ran_at desc limit 200`;
+  return rows.map((r) => ({
+    runId: r.run_id,
+    dealer: r.dealer ?? "",
+    fileName: r.file_name ?? "",
+    total: r.total,
+    matched: r.matched,
+    review: r.review,
+    unmatched: r.unmatched,
+    ranAt: typeof r.ran_at === "string" ? r.ran_at : new Date(r.ran_at).toISOString(),
+  }));
+}
+
+export async function loadRunSnapshot(sql: SqlExec, runId: string): Promise<{ runId: string; dealer: string; fileName: string; snapshot: any } | null> {
+  const rows = await sql`select run_id, dealer, file_name, snapshot from run_snapshots where run_id = ${runId}`;
+  if (!rows[0]) return null;
+  return { runId: rows[0].run_id, dealer: rows[0].dealer ?? "", fileName: rows[0].file_name ?? "", snapshot: rows[0].snapshot };
+}
+
 // All decisions (oldest first) for the Stats identification-rate computation.
 export async function loadDecisions(
   sql: SqlExec

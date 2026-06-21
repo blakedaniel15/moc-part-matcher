@@ -73,4 +73,16 @@ export async function runMigration(sql: Sql): Promise<void> {
   // so applied as an idempotent ALTER — re-run /setup to pick it up).
   await sql`alter table decisions add column if not exists run_id text`;
   await sql`alter table decisions add column if not exists dealer text`;
+  // Saved snapshot of each finished file's results (the run history list).
+  await sql`create table if not exists run_snapshots (
+    run_id text primary key,
+    dealer text,
+    file_name text,
+    total integer not null default 0,
+    matched integer not null default 0,
+    review integer not null default 0,
+    unmatched integer not null default 0,
+    snapshot jsonb,
+    ran_at timestamptz not null default now()
+  )`;
 }
