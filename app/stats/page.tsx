@@ -72,9 +72,10 @@ export default function StatsPage() {
         <>
           <Card>
             <CardHeader>
-              <CardTitle>MOC identification rate</CardTitle>
+              <CardTitle>MOC identification rate · all files</CardTitle>
               <CardDescription>
-                Of {data.overall.denominator} confirmed MOC parts, the system auto-matched {data.overall.hits} correctly.
+                Across {data.runs.length} {data.runs.length === 1 ? "file" : "files"}: of {data.overall.denominator} confirmed MOC parts, the
+                system auto-matched {data.overall.hits} correctly.
               </CardDescription>
             </CardHeader>
             <CardContent>
