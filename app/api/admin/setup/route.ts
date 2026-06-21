@@ -7,7 +7,6 @@ import archetypes from "../../../../data/archetypes.json";
 import exportData from "../../../../eval/ground-truth/moc-export.json";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
 
 // Run N async tasks in parallel chunks so a one-time seed finishes well under the
 // function timeout without flooding the connection.
