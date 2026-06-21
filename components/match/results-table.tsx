@@ -10,62 +10,55 @@ import { MatchExistingDialog } from "./match-existing-dialog";
 import { cn } from "../../lib/utils";
 
 type Filter = "all" | "matched" | "review" | "unmatched";
-type DecisionState = "none" | "saving" | "approve" | "reject";
+type Decision = "approve" | "reject";
 
 const isMatched = (r: MatchResult) =>
   r.matchType === "EXACT" || r.matchType === "FUZZY" || (r.matchType === "AI" && (r.confidence === "HIGH" || r.confidence === "MEDIUM"));
 const isReview = (r: MatchResult) => r.matchType === "AI" && r.confidence === "LOW";
 
-function DecisionCell({ row, dealer, runId }: { row: MatchResult; dealer: string; runId: string }) {
-  const [state, setState] = useState<DecisionState>("none");
-  const [err, setErr] = useState(false);
-
-  const decide = async (outcome: "approve" | "reject") => {
-    setState("saving");
-    setErr(false);
-    try {
-      const res = await fetch("/api/decision", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ dealer, runId, outcome, row }),
-      });
-      if (!res.ok) throw new Error();
-      setState(outcome);
-    } catch {
-      setState("none");
-      setErr(true);
-    }
-  };
-
-  if (state === "saving") return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden />;
-
+// Presentational only — the decision state is owned by the table so it survives
+// re-renders. (Previously this held local state and lost the highlight on re-render.)
+function DecisionButtons({
+  decision,
+  saving,
+  error,
+  onApprove,
+  onReject,
+}: {
+  decision: Decision | undefined;
+  saving: boolean;
+  error: boolean;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  if (saving) return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden />;
   return (
     <span className="inline-flex items-center gap-1">
       <button
         type="button"
-        onClick={() => decide("approve")}
-        aria-pressed={state === "approve"}
+        onClick={onApprove}
+        aria-pressed={decision === "approve"}
         aria-label="Correct match"
         className={cn(
           "inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium ring-1 ring-inset transition-colors",
-          state === "approve" ? "bg-exact text-white ring-exact" : "bg-card text-muted-foreground ring-border hover:bg-exact/10 hover:text-exact"
+          decision === "approve" ? "bg-exact text-white ring-exact" : "bg-card text-muted-foreground ring-border hover:bg-exact/10 hover:text-exact"
         )}
       >
         <Check className="h-3.5 w-3.5" aria-hidden /> Yes
       </button>
       <button
         type="button"
-        onClick={() => decide("reject")}
-        aria-pressed={state === "reject"}
+        onClick={onReject}
+        aria-pressed={decision === "reject"}
         aria-label="Wrong match"
         className={cn(
           "inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium ring-1 ring-inset transition-colors",
-          state === "reject" ? "bg-destructive text-white ring-destructive" : "bg-card text-muted-foreground ring-border hover:bg-destructive/10 hover:text-destructive"
+          decision === "reject" ? "bg-destructive text-white ring-destructive" : "bg-card text-muted-foreground ring-border hover:bg-destructive/10 hover:text-destructive"
         )}
       >
         <X className="h-3.5 w-3.5" aria-hidden /> No
       </button>
-      {err && <span className="text-xs text-destructive">retry</span>}
+      {error && <span className="text-xs text-destructive">retry</span>}
     </span>
   );
 }
@@ -76,6 +69,29 @@ export function ResultsTable({ results, dealer, runId }: { results: MatchResult[
   const [addingRow, setAddingRow] = useState<MatchResult | null>(null);
   const [matchingRow, setMatchingRow] = useState<MatchResult | null>(null);
   const [cataloged, setCataloged] = useState<Set<string>>(new Set());
+
+  // Decision state owned here so the Yes/No highlight persists across re-renders.
+  const [decided, setDecided] = useState<Record<string, Decision>>({});
+  const [savingSku, setSavingSku] = useState<string | null>(null);
+  const [errorSku, setErrorSku] = useState<string | null>(null);
+
+  const decide = async (row: MatchResult, outcome: Decision) => {
+    setSavingSku(row.sku);
+    setErrorSku(null);
+    try {
+      const res = await fetch("/api/decision", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ dealer, runId, outcome, row }),
+      });
+      if (!res.ok) throw new Error();
+      setDecided((prev) => ({ ...prev, [row.sku]: outcome }));
+    } catch {
+      setErrorSku(row.sku);
+    } finally {
+      setSavingSku((s) => (s === row.sku ? null : s));
+    }
+  };
 
   const counts = useMemo(
     () => ({
@@ -147,8 +163,8 @@ export function ResultsTable({ results, dealer, runId }: { results: MatchResult[
               </tr>
             </thead>
             <tbody className="divide-y">
-              {rows.map((r, i) => (
-                <tr key={r.sku + i} className="hover:bg-muted/30">
+              {rows.map((r) => (
+                <tr key={r.sku} className="hover:bg-muted/30">
                   <td className="whitespace-nowrap px-4 py-2.5 font-mono text-xs">{r.sku}</td>
                   <td className="px-4 py-2.5">{r.partName || <span className="text-muted-foreground">—</span>}</td>
                   <td className="max-w-xs truncate px-4 py-2.5 text-muted-foreground" title={r.matchedArchetype || ""}>
@@ -167,7 +183,13 @@ export function ResultsTable({ results, dealer, runId }: { results: MatchResult[
                         <Check className="h-3.5 w-3.5" aria-hidden /> Resolved
                       </span>
                     ) : r.matchedPartNumber ? (
-                      <DecisionCell row={r} dealer={dealer} runId={runId} />
+                      <DecisionButtons
+                        decision={decided[r.sku]}
+                        saving={savingSku === r.sku}
+                        error={errorSku === r.sku}
+                        onApprove={() => decide(r, "approve")}
+                        onReject={() => decide(r, "reject")}
+                      />
                     ) : (
                       <span className="inline-flex items-center gap-1">
                         <button
