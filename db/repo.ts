@@ -60,3 +60,14 @@ export async function addDealerRejection(sql: SqlExec, dealer: string, sku: stri
   await sql`insert into dealer_rejections (dealer, sku) values (${dealer}, ${sku})
     on conflict (dealer, sku) do nothing`;
 }
+
+// Add a new MOC product to the catalog (source 'custom' so it's distinguishable
+// from the official import).
+export async function upsertArchetype(
+  sql: SqlExec,
+  a: { barePartNumber: string; manufacturerPart: string }
+): Promise<void> {
+  await sql`insert into archetypes (bare_part_number, manufacturer_part, incentive, source)
+    values (${a.barePartNumber}, ${a.manufacturerPart}, 0, 'custom')
+    on conflict (bare_part_number) do update set manufacturer_part = excluded.manufacturer_part, source = 'custom'`;
+}
