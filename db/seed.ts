@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { neon } from "@neondatabase/serverless";
-import { requireEnv } from "../lib/config";
+import { requireEnv, dbUrl } from "../lib/config";
 import { archetypeRows, approvedRows, blockedRows } from "./transforms";
 
 async function main() {
-  const sql = neon(requireEnv("DATABASE_URL"));
+  const sql = neon(dbUrl());
   const catalog = JSON.parse(readFileSync("data/archetypes.json", "utf8"));
   const exp = JSON.parse(readFileSync("eval/ground-truth/moc-export.json", "utf8"));
 

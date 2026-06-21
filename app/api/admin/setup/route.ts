@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
-import { requireEnv } from "../../../../lib/config";
+import { requireEnv, dbUrl } from "../../../../lib/config";
 import { SCHEMA_SQL } from "../../../../db/schema";
 import { archetypeRows, approvedRows, blockedRows } from "../../../../db/transforms";
 import archetypes from "../../../../data/archetypes.json";
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Incorrect admin secret." }, { status: 401 });
   }
 
-  const sql = neon(requireEnv("DATABASE_URL"));
+  const sql = neon(dbUrl());
   await sql.query(SCHEMA_SQL);
 
   const aRows = archetypeRows(archetypes as any[]);
