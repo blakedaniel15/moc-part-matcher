@@ -56,7 +56,7 @@ export default function ResultsPage() {
         </Link>
       </div>
 
-      <ResultsTable results={run.results} dealer={run.dealerName} />
+      <ResultsTable results={run.results} dealer={run.dealerName} runId={run.runId} />
     </div>
   );
 }

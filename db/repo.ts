@@ -38,10 +38,18 @@ export async function recordDecision(
     confidence: string | null;
     outcome: string;
     barePartNumber: string | null;
+    runId?: string | null;
+    dealer?: string | null;
   }
 ): Promise<void> {
-  await sql`insert into decisions (sku, part_name, match_type, confidence, outcome, bare_part_number)
-    values (${d.sku}, ${d.partName}, ${d.matchType}, ${d.confidence}, ${d.outcome}, ${d.barePartNumber})`;
+  await sql`insert into decisions (sku, part_name, match_type, confidence, outcome, bare_part_number, run_id, dealer)
+    values (${d.sku}, ${d.partName}, ${d.matchType}, ${d.confidence}, ${d.outcome}, ${d.barePartNumber}, ${d.runId ?? null}, ${d.dealer ?? null})`;
+}
+
+// Full catalog for the picker and the Catalog browser.
+export async function loadCatalogFull(sql: SqlExec): Promise<{ barePartNumber: string; manufacturerPart: string; source: string }[]> {
+  const rows = await sql`select bare_part_number, manufacturer_part, source from archetypes order by bare_part_number`;
+  return rows.map((r) => ({ barePartNumber: r.bare_part_number, manufacturerPart: r.manufacturer_part, source: r.source }));
 }
 
 // "Yes" on a match — remember this dealer SKU → archetype so it auto-matches next run.

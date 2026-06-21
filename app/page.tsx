@@ -54,7 +54,9 @@ export default function UploadPage() {
         return;
       }
       const results = await res.json();
-      saveRun({ results, dealerName, fileName: file.name, ranAt: new Date().toISOString() });
+      const runId =
+        typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `run-${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+      saveRun({ results, dealerName, fileName: file.name, ranAt: new Date().toISOString(), runId });
       router.push("/results");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Match failed.");

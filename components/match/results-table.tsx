@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, X, Loader2, Plus } from "lucide-react";
+import { Check, X, Loader2, Plus, Link2 } from "lucide-react";
 import type { MatchResult } from "../../engine/types";
 import { MatchTypeChip } from "./match-type-chip";
 import { ConfidenceMeter } from "./confidence-meter";
 import { AddCatalogDialog } from "./add-catalog-dialog";
+import { MatchExistingDialog } from "./match-existing-dialog";
 import { cn } from "../../lib/utils";
 
 type Filter = "all" | "matched" | "review" | "unmatched";
@@ -15,7 +16,7 @@ const isMatched = (r: MatchResult) =>
   r.matchType === "EXACT" || r.matchType === "FUZZY" || (r.matchType === "AI" && (r.confidence === "HIGH" || r.confidence === "MEDIUM"));
 const isReview = (r: MatchResult) => r.matchType === "AI" && r.confidence === "LOW";
 
-function DecisionCell({ row, dealer }: { row: MatchResult; dealer: string }) {
+function DecisionCell({ row, dealer, runId }: { row: MatchResult; dealer: string; runId: string }) {
   const [state, setState] = useState<DecisionState>("none");
   const [err, setErr] = useState(false);
 
@@ -26,7 +27,7 @@ function DecisionCell({ row, dealer }: { row: MatchResult; dealer: string }) {
       const res = await fetch("/api/decision", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ dealer, outcome, row }),
+        body: JSON.stringify({ dealer, runId, outcome, row }),
       });
       if (!res.ok) throw new Error();
       setState(outcome);
@@ -69,10 +70,11 @@ function DecisionCell({ row, dealer }: { row: MatchResult; dealer: string }) {
   );
 }
 
-export function ResultsTable({ results, dealer }: { results: MatchResult[]; dealer: string }) {
+export function ResultsTable({ results, dealer, runId }: { results: MatchResult[]; dealer: string; runId: string }) {
   const [data, setData] = useState<MatchResult[]>(results);
   const [filter, setFilter] = useState<Filter>("all");
   const [addingRow, setAddingRow] = useState<MatchResult | null>(null);
+  const [matchingRow, setMatchingRow] = useState<MatchResult | null>(null);
   const [cataloged, setCataloged] = useState<Set<string>>(new Set());
 
   const counts = useMemo(
@@ -93,16 +95,17 @@ export function ResultsTable({ results, dealer }: { results: MatchResult[]; deal
     [data, filter]
   );
 
-  const onAdded = (sku: string, barePartNumber: string, manufacturerPart: string) => {
+  const onResolved = (sku: string, barePartNumber: string, manufacturerPart: string) => {
     setData((prev) =>
       prev.map((r) =>
         r.sku === sku
-          ? { ...r, matchType: "EXACT", matchedArchetype: manufacturerPart, matchedPartNumber: barePartNumber, confidence: "EXACT", reason: "Newly cataloged" }
+          ? { ...r, matchType: "EXACT", matchedArchetype: manufacturerPart, matchedPartNumber: barePartNumber, confidence: "EXACT", reason: "Resolved by reviewer" }
           : r
       )
     );
     setCataloged((prev) => new Set(prev).add(sku));
     setAddingRow(null);
+    setMatchingRow(null);
   };
 
   const TABS: { key: Filter; label: string }[] = [
@@ -161,18 +164,27 @@ export function ResultsTable({ results, dealer }: { results: MatchResult[]; deal
                   <td className="px-4 py-2.5">
                     {cataloged.has(r.sku) ? (
                       <span className="inline-flex items-center gap-1 rounded-md bg-exact/10 px-2 py-0.5 text-xs font-medium text-exact ring-1 ring-inset ring-exact/20">
-                        <Check className="h-3.5 w-3.5" aria-hidden /> Cataloged
+                        <Check className="h-3.5 w-3.5" aria-hidden /> Resolved
                       </span>
                     ) : r.matchedPartNumber ? (
-                      <DecisionCell row={r} dealer={dealer} />
+                      <DecisionCell row={r} dealer={dealer} runId={runId} />
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => setAddingRow(r)}
-                        className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-accent ring-1 ring-inset ring-border transition-colors hover:bg-accent/10"
-                      >
-                        <Plus className="h-3.5 w-3.5" aria-hidden /> Add to catalog
-                      </button>
+                      <span className="inline-flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setMatchingRow(r)}
+                          className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-accent ring-1 ring-inset ring-border transition-colors hover:bg-accent/10"
+                        >
+                          <Link2 className="h-3.5 w-3.5" aria-hidden /> Match
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAddingRow(r)}
+                          className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground ring-1 ring-inset ring-border transition-colors hover:bg-muted/60 hover:text-foreground"
+                        >
+                          <Plus className="h-3.5 w-3.5" aria-hidden /> New
+                        </button>
+                      </span>
                     )}
                   </td>
                 </tr>
@@ -189,7 +201,8 @@ export function ResultsTable({ results, dealer }: { results: MatchResult[]; deal
         </div>
       </div>
 
-      <AddCatalogDialog key={addingRow?.sku ?? "none"} row={addingRow} onClose={() => setAddingRow(null)} onAdded={onAdded} />
+      <AddCatalogDialog key={"add-" + (addingRow?.sku ?? "none")} row={addingRow} dealer={dealer} runId={runId} onClose={() => setAddingRow(null)} onAdded={onResolved} />
+      <MatchExistingDialog key={"match-" + (matchingRow?.sku ?? "none")} row={matchingRow} dealer={dealer} runId={runId} onClose={() => setMatchingRow(null)} onMatched={onResolved} />
     </div>
   );
 }

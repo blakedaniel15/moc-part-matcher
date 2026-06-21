@@ -69,4 +69,8 @@ export async function runMigration(sql: Sql): Promise<void> {
     catalog_version text null,
     created_at timestamptz not null default now()
   )`;
+  // run_id ties each decision to one file upload (added after the initial release,
+  // so applied as an idempotent ALTER — re-run /setup to pick it up).
+  await sql`alter table decisions add column if not exists run_id text`;
+  await sql`alter table decisions add column if not exists dealer text`;
 }

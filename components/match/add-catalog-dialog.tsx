@@ -7,10 +7,14 @@ import type { MatchResult } from "../../engine/types";
 
 export function AddCatalogDialog({
   row,
+  dealer,
+  runId,
   onClose,
   onAdded,
 }: {
   row: MatchResult | null;
+  dealer: string;
+  runId: string;
   onClose: () => void;
   onAdded: (sku: string, barePartNumber: string, manufacturerPart: string) => void;
 }) {
@@ -33,7 +37,7 @@ export function AddCatalogDialog({
       const res = await fetch("/api/catalog/add", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sku: row.sku, partName: row.partName, barePartNumber: bare, productName }),
+        body: JSON.stringify({ row, barePartNumber: bare, productName, runId, dealer }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {

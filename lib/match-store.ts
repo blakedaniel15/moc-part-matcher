@@ -7,6 +7,7 @@ export interface StoredRun {
   dealerName: string;
   fileName: string;
   ranAt: string;
+  runId: string;
 }
 
 // Results are passed from the Upload screen to the Results screen via sessionStorage

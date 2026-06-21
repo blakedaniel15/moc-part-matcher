@@ -5,11 +5,11 @@ import { upsertArchetype, upsertApprovedMapping, recordDecision } from "../../..
 export const runtime = "nodejs";
 
 // Add a new product found in a dealer file to the catalog, and capture the DMS
-// info that revealed it: the new archetype goes into `archetypes`, and the dealer
-// SKU -> archetype mapping goes into `approved_mappings` so it auto-matches next run.
+// info that revealed it. Records the decision against the original bucket so it
+// counts as a rescued MOC part in the identification rate.
 export async function POST(req: Request) {
   try {
-    const { sku, partName, barePartNumber, productName } = await req.json();
+    const { row, barePartNumber, productName, runId, dealer } = await req.json();
     const bare = String(barePartNumber || "").trim();
     const name = String(productName || "").trim();
     if (!bare || !name) {
@@ -19,20 +19,17 @@ export async function POST(req: Request) {
     const sql: any = db();
 
     await upsertArchetype(sql, { barePartNumber: bare, manufacturerPart });
-    if (sku) {
-      await upsertApprovedMapping(sql, {
-        dmsSku: sku,
-        dmsPartName: partName ?? "",
-        barePartNumber: bare,
-        manufacturerPart,
-      });
+    if (row?.sku) {
+      await upsertApprovedMapping(sql, { dmsSku: row.sku, dmsPartName: row.partName ?? "", barePartNumber: bare, manufacturerPart });
       await recordDecision(sql, {
-        sku,
-        partName: partName ?? "",
-        matchType: "CATALOG_ADD",
-        confidence: null,
+        sku: row.sku,
+        partName: row.partName ?? "",
+        matchType: row.matchType ?? "UNMATCHED",
+        confidence: row.confidence ?? null,
         outcome: "correct",
         barePartNumber: bare,
+        runId: runId ?? null,
+        dealer: dealer ?? null,
       });
     }
 
