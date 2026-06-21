@@ -1,18 +1,76 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Check, X, Loader2 } from "lucide-react";
 import type { MatchResult } from "../../engine/types";
 import { MatchTypeChip } from "./match-type-chip";
 import { ConfidenceMeter } from "./confidence-meter";
 import { cn } from "../../lib/utils";
 
 type Filter = "all" | "matched" | "review" | "unmatched";
+type DecisionState = "none" | "saving" | "approve" | "reject";
 
 const isMatched = (r: MatchResult) =>
   r.matchType === "EXACT" || r.matchType === "FUZZY" || (r.matchType === "AI" && (r.confidence === "HIGH" || r.confidence === "MEDIUM"));
 const isReview = (r: MatchResult) => r.matchType === "AI" && r.confidence === "LOW";
 
-export function ResultsTable({ results }: { results: MatchResult[] }) {
+function DecisionCell({ row, dealer }: { row: MatchResult; dealer: string }) {
+  const [state, setState] = useState<DecisionState>("none");
+  const [err, setErr] = useState(false);
+
+  if (!row.matchedPartNumber) return <span className="text-xs text-muted-foreground">—</span>;
+
+  const decide = async (outcome: "approve" | "reject") => {
+    setState("saving");
+    setErr(false);
+    try {
+      const res = await fetch("/api/decision", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ dealer, outcome, row }),
+      });
+      if (!res.ok) throw new Error();
+      setState(outcome);
+    } catch {
+      setState("none");
+      setErr(true);
+    }
+  };
+
+  if (state === "saving") return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden />;
+
+  return (
+    <span className="inline-flex items-center gap-1">
+      <button
+        type="button"
+        onClick={() => decide("approve")}
+        aria-pressed={state === "approve"}
+        aria-label="Correct match"
+        className={cn(
+          "inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium ring-1 ring-inset transition-colors",
+          state === "approve" ? "bg-exact text-white ring-exact" : "bg-card text-muted-foreground ring-border hover:bg-exact/10 hover:text-exact"
+        )}
+      >
+        <Check className="h-3.5 w-3.5" aria-hidden /> Yes
+      </button>
+      <button
+        type="button"
+        onClick={() => decide("reject")}
+        aria-pressed={state === "reject"}
+        aria-label="Wrong match"
+        className={cn(
+          "inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium ring-1 ring-inset transition-colors",
+          state === "reject" ? "bg-destructive text-white ring-destructive" : "bg-card text-muted-foreground ring-border hover:bg-destructive/10 hover:text-destructive"
+        )}
+      >
+        <X className="h-3.5 w-3.5" aria-hidden /> No
+      </button>
+      {err && <span className="text-xs text-destructive">retry</span>}
+    </span>
+  );
+}
+
+export function ResultsTable({ results, dealer }: { results: MatchResult[]; dealer: string }) {
   const [filter, setFilter] = useState<Filter>("all");
 
   const counts = useMemo(
@@ -68,7 +126,7 @@ export function ResultsTable({ results }: { results: MatchResult[] }) {
                 <th className="px-4 py-2.5 text-left font-medium">MOC #</th>
                 <th className="px-4 py-2.5 text-left font-medium">Match</th>
                 <th className="px-4 py-2.5 text-left font-medium">Confidence</th>
-                <th className="px-4 py-2.5 text-right font-medium">Incentive</th>
+                <th className="px-4 py-2.5 text-left font-medium">Correct?</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -86,7 +144,9 @@ export function ResultsTable({ results }: { results: MatchResult[] }) {
                   <td className="px-4 py-2.5">
                     <ConfidenceMeter confidence={r.confidence} />
                   </td>
-                  <td className="tnum px-4 py-2.5 text-right">{r.incentive ? `$${r.incentive}` : "—"}</td>
+                  <td className="px-4 py-2.5">
+                    <DecisionCell row={r} dealer={dealer} />
+                  </td>
                 </tr>
               ))}
               {rows.length === 0 && (
