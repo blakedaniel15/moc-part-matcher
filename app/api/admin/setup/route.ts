@@ -17,24 +17,30 @@ async function inChunks<T>(items: T[], fn: (t: T) => Promise<unknown>, size = 50
 }
 
 export async function POST(req: Request) {
-  let secret = "";
   try {
-    secret = (await req.json())?.secret ?? "";
-  } catch {
-    /* no body */
-  }
-  if (secret !== requireEnv("ADMIN_SECRET")) {
-    return NextResponse.json({ error: "Incorrect admin secret." }, { status: 401 });
-  }
+    let secret = "";
+    try {
+      secret = (await req.json())?.secret ?? "";
+    } catch {
+      /* no body */
+    }
+    // Report a clear cause instead of a generic 500 if the env var is missing.
+    const adminSecret = process.env.ADMIN_SECRET;
+    if (!adminSecret) {
+      return NextResponse.json({ error: "ADMIN_SECRET is not set on this deployment. Add it in the project's environment variables and redeploy." }, { status: 500 });
+    }
+    if (secret !== adminSecret) {
+      return NextResponse.json({ error: "Incorrect admin secret." }, { status: 401 });
+    }
 
-  const sql = neon(dbUrl());
-  await sql.query(SCHEMA_SQL);
+    const sql = neon(dbUrl());
+    await sql.query(SCHEMA_SQL);
 
-  const aRows = archetypeRows(archetypes as any[]);
-  const pRows = approvedRows(exportData as any);
-  const bRows = blockedRows(exportData as any);
+    const aRows = archetypeRows(archetypes as any[]);
+    const pRows = approvedRows(exportData as any);
+    const bRows = blockedRows(exportData as any);
 
-  await inChunks(aRows, (r) =>
+    await inChunks(aRows, (r) =>
     sql`insert into archetypes (bare_part_number, manufacturer_part, incentive, components, source, official_name)
       values (${r.bare_part_number}, ${r.manufacturer_part}, ${r.incentive}, ${r.components}, ${r.source}, ${r.official_name})
       on conflict (bare_part_number) do update set manufacturer_part = excluded.manufacturer_part,
@@ -52,5 +58,8 @@ export async function POST(req: Request) {
       on conflict (sku) do update set part_name = excluded.part_name`
   );
 
-  return NextResponse.json({ ok: true, archetypes: aRows.length, approved: pRows.length, blocked: bRows.length });
+    return NextResponse.json({ ok: true, archetypes: aRows.length, approved: pRows.length, blocked: bRows.length });
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Setup failed." }, { status: 500 });
+  }
 }

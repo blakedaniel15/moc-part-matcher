@@ -22,9 +22,15 @@ export default function SetupPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ secret }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = null;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        /* non-JSON response */
+      }
       if (!res.ok) {
-        setError(data.error || "Setup failed.");
+        setError(data?.error || `Setup failed (HTTP ${res.status}). ${text.slice(0, 160)}`);
         setStatus("error");
         return;
       }
