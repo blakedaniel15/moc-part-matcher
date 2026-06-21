@@ -28,3 +28,11 @@ export function loadRun(): StoredRun | null {
     return null;
   }
 }
+
+export function clearRun() {
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {
+    /* sessionStorage unavailable */
+  }
+}
