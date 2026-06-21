@@ -52,6 +52,22 @@ export async function loadCatalogFull(sql: SqlExec): Promise<{ barePartNumber: s
   return rows.map((r) => ({ barePartNumber: r.bare_part_number, manufacturerPart: r.manufacturer_part, source: r.source }));
 }
 
+// All decisions (oldest first) for the Stats identification-rate computation.
+export async function loadDecisions(
+  sql: SqlExec
+): Promise<{ sku: string; matchType: string | null; confidence: string | null; outcome: string; runId: string | null; dealer: string | null; ts: string }[]> {
+  const rows = await sql`select sku, match_type, confidence, outcome, run_id, dealer, ts from decisions order by ts asc`;
+  return rows.map((r) => ({
+    sku: r.sku,
+    matchType: r.match_type,
+    confidence: r.confidence,
+    outcome: r.outcome,
+    runId: r.run_id,
+    dealer: r.dealer,
+    ts: typeof r.ts === "string" ? r.ts : new Date(r.ts).toISOString(),
+  }));
+}
+
 // "Yes" on a match — remember this dealer SKU → archetype so it auto-matches next run.
 export async function upsertApprovedMapping(
   sql: SqlExec,
