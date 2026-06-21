@@ -1,10 +1,10 @@
 import { neon } from "@neondatabase/serverless";
 import { requireEnv, dbUrl } from "../lib/config";
-import { SCHEMA_SQL } from "./schema";
+import { runMigration } from "./schema";
 
 async function main() {
   const sql = neon(dbUrl());
-  await sql.query(SCHEMA_SQL);
+  await runMigration(sql);
   console.log("Migration applied.");
 }
 

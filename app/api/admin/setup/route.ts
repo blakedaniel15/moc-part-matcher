@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { requireEnv, dbUrl } from "../../../../lib/config";
-import { SCHEMA_SQL } from "../../../../db/schema";
+import { runMigration } from "../../../../db/schema";
 import { archetypeRows, approvedRows, blockedRows } from "../../../../db/transforms";
 import archetypes from "../../../../data/archetypes.json";
 import exportData from "../../../../eval/ground-truth/moc-export.json";
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     }
 
     const sql = neon(dbUrl());
-    await sql.query(SCHEMA_SQL);
+    await runMigration(sql);
 
     const aRows = archetypeRows(archetypes as any[]);
     const pRows = approvedRows(exportData as any);
