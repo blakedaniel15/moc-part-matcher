@@ -62,7 +62,7 @@ export default function StatsPage() {
         </div>
       ) : error ? (
         <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-      ) : !data || data.overall.denominator === 0 ? (
+      ) : !data || data.overall.decided === 0 ? (
         <EmptyState
           icon={<BarChart3 className="h-6 w-6" aria-hidden />}
           title="No reviewed parts yet"
@@ -80,7 +80,9 @@ export default function StatsPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-end gap-3">
-                <span className="tnum text-5xl font-bold tracking-tight text-accent">{pct(data.overall.rate)}</span>
+                <span className="tnum text-5xl font-bold tracking-tight text-accent">
+                  {data.overall.denominator ? pct(data.overall.rate) : "—"}
+                </span>
                 <span className="tnum mb-1 text-sm text-muted-foreground">
                   {data.overall.hits} / {data.overall.denominator}
                 </span>

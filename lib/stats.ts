@@ -28,6 +28,7 @@ export interface Tally {
   falsePositives: number; // Matched bucket but rejected
   denominator: number; // all confirmed MOC parts = hits + rescued
   rate: number; // hits / denominator (0..1)
+  decided: number; // total parts with any verdict (approve/correct/reject)
 }
 
 // Dedupe to the latest decision per (run, sku); input must be ordered by ts ascending.
@@ -39,24 +40,23 @@ function tally(decisions: DecisionRow[]): Tally {
   let rescuedReview = 0;
   let rescuedUnmatched = 0;
   let falsePositives = 0;
+  let decided = 0;
 
   for (const d of latest.values()) {
     const b = bucketOf(d);
-    if (d.outcome === "approve") {
+    if (d.outcome === "approve" || d.outcome === "correct") {
+      decided++;
       if (b === "matched") hits++;
       else if (b === "review") rescuedReview++;
       else rescuedUnmatched++;
-    } else if (d.outcome === "correct") {
-      if (b === "matched") hits++;
-      else if (b === "review") rescuedReview++;
-      else rescuedUnmatched++;
-    } else if (d.outcome === "reject" && b === "matched") {
-      falsePositives++;
+    } else if (d.outcome === "reject") {
+      decided++;
+      if (b === "matched") falsePositives++;
     }
   }
 
   const denominator = hits + rescuedReview + rescuedUnmatched;
-  return { hits, rescuedReview, rescuedUnmatched, falsePositives, denominator, rate: denominator ? hits / denominator : 0 };
+  return { hits, rescuedReview, rescuedUnmatched, falsePositives, denominator, rate: denominator ? hits / denominator : 0, decided };
 }
 
 export interface RunStat extends Tally {

@@ -124,8 +124,8 @@ export default function ResultsPage() {
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight">Reviewed files</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Past runs. Click one to re-open its results.</p>
+          <h2 className="text-xl font-semibold tracking-tight">Run history</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Files you’ve run. Click one to re-open and review it.</p>
         </div>
         <Link href="/">
           <Button variant="accent" size="sm">
