@@ -18,13 +18,22 @@ const fmtDate = (iso: string | null) => {
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 };
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+// Three KPIs derived from a tally.
+const idRate = (t: Tally) => (t.denominator ? t.hits / t.denominator : 0);
+const reviewRate = (t: Tally) => (t.denominator ? t.rescuedReview / t.denominator : 0);
+const fpRate = (t: Tally) => {
+  const base = t.hits + t.falsePositives;
+  return base ? t.falsePositives / base : 0;
+};
+
+function Kpi({ label, value, sub, tone }: { label: string; value: string; sub: string; tone: "good" | "warn" | "bad-when-high" }) {
+  const color = tone === "good" ? "text-accent" : tone === "warn" ? "text-fuzzy" : value === "0.0%" ? "text-exact" : "text-destructive";
   return (
     <Card>
-      <CardContent className="flex flex-col gap-1 py-4">
+      <CardContent className="flex flex-col gap-1 py-5">
         <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
-        <span className="tnum text-2xl font-semibold">{value}</span>
-        {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+        <span className={`tnum text-3xl font-bold tracking-tight ${color}`}>{value}</span>
+        <span className="text-xs text-muted-foreground">{sub}</span>
       </CardContent>
     </Card>
   );
@@ -51,9 +60,7 @@ export default function StatsPage() {
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <div>
         <h2 className="text-xl font-semibold tracking-tight">Accuracy &amp; stats</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          How well the system identifies MOC parts — measured against your review decisions.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">How well the system identifies MOC parts — measured against your review decisions.</p>
       </div>
 
       {loading ? (
@@ -66,54 +73,58 @@ export default function StatsPage() {
         <EmptyState
           icon={<BarChart3 className="h-6 w-6" aria-hidden />}
           title="No reviewed parts yet"
-          body="Run a file and review it (Yes/No on matches, Match/New on unmatched MOC parts). Your identification rate appears here."
+          body="Run a file and review it (Yes/No on matches, Match/New on unmatched MOC parts). Your stats appear here."
         />
       ) : (
         <>
-          <Card>
-            <CardHeader>
-              <CardTitle>MOC identification rate · all files</CardTitle>
-              <CardDescription>
-                Across {data.runs.length} {data.runs.length === 1 ? "file" : "files"}: of {data.overall.denominator} confirmed MOC parts, the
-                system auto-matched {data.overall.hits} correctly.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-end gap-3">
-                <span className="tnum text-5xl font-bold tracking-tight text-accent">
-                  {data.overall.denominator ? pct(data.overall.rate) : "—"}
-                </span>
-                <span className="tnum mb-1 text-sm text-muted-foreground">
-                  {data.overall.hits} / {data.overall.denominator}
-                </span>
-              </div>
-              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div className="h-full rounded-full bg-accent" style={{ width: pct(data.overall.rate) }} />
-              </div>
-            </CardContent>
-          </Card>
+          <p className="text-sm text-muted-foreground">
+            Across {data.runs.length} {data.runs.length === 1 ? "file" : "files"} · {data.overall.denominator} confirmed MOC parts
+          </p>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Kpi
+              label="Identification rate"
+              value={data.overall.denominator ? pct(idRate(data.overall)) : "—"}
+              sub={`${data.overall.hits} / ${data.overall.denominator} auto-matched`}
+              tone="good"
+            />
+            <Kpi
+              label="Review rate"
+              value={data.overall.denominator ? pct(reviewRate(data.overall)) : "—"}
+              sub={`${data.overall.rescuedReview} needed manual review`}
+              tone="warn"
+            />
+            <Kpi
+              label="False-positive rate"
+              value={data.overall.hits + data.overall.falsePositives ? pct(fpRate(data.overall)) : "—"}
+              sub={`${data.overall.falsePositives} of ${data.overall.hits + data.overall.falsePositives} matches wrong`}
+              tone="bad-when-high"
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Stat label="Auto-matched" value={String(data.overall.hits)} sub="confirmed correct" />
-            <Stat label="Rescued · review" value={String(data.overall.rescuedReview)} sub="you approved" />
-            <Stat label="Rescued · unmatched" value={String(data.overall.rescuedUnmatched)} sub="matched or added" />
+            <Stat label="Rescued · review" value={String(data.overall.rescuedReview)} sub="low-confidence, approved" />
+            <Stat label="Rescued · unmatched" value={String(data.overall.rescuedUnmatched)} sub="system missed" />
             <Stat label="False positives" value={String(data.overall.falsePositives)} sub="matched, you said no" />
           </div>
 
           <Card>
             <CardHeader>
               <CardTitle>By file</CardTitle>
-              <CardDescription>Identification rate per upload.</CardDescription>
+              <CardDescription>Identification · review · false-positive rate per upload.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="overflow-hidden rounded-md border">
+              <div className="overflow-x-auto rounded-md border">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
                     <tr>
                       <th className="px-4 py-2.5 text-left font-medium">Dealer</th>
                       <th className="px-4 py-2.5 text-left font-medium">Date</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Rate</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Hits / MOC</th>
+                      <th className="px-4 py-2.5 text-right font-medium">Identify</th>
+                      <th className="px-4 py-2.5 text-right font-medium">Review</th>
+                      <th className="px-4 py-2.5 text-right font-medium">False+</th>
+                      <th className="px-4 py-2.5 text-right font-medium">MOC</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -121,10 +132,12 @@ export default function StatsPage() {
                       <tr key={r.runId} className="hover:bg-muted/30">
                         <td className="px-4 py-2.5">{r.dealer}</td>
                         <td className="px-4 py-2.5 text-muted-foreground">{fmtDate(r.ranAt)}</td>
-                        <td className="tnum px-4 py-2.5 text-right font-medium">{r.denominator ? pct(r.rate) : "—"}</td>
-                        <td className="tnum px-4 py-2.5 text-right text-muted-foreground">
-                          {r.hits} / {r.denominator}
+                        <td className="tnum px-4 py-2.5 text-right font-medium text-accent">{r.denominator ? pct(idRate(r)) : "—"}</td>
+                        <td className="tnum px-4 py-2.5 text-right text-fuzzy">{r.denominator ? pct(reviewRate(r)) : "—"}</td>
+                        <td className={`tnum px-4 py-2.5 text-right ${r.falsePositives ? "text-destructive" : "text-muted-foreground"}`}>
+                          {r.hits + r.falsePositives ? pct(fpRate(r)) : "—"}
                         </td>
+                        <td className="tnum px-4 py-2.5 text-right text-muted-foreground">{r.denominator}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -135,5 +148,17 @@ export default function StatsPage() {
         </>
       )}
     </div>
+  );
+}
+
+function Stat({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col gap-1 py-4">
+        <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+        <span className="tnum text-2xl font-semibold">{value}</span>
+        <span className="text-xs text-muted-foreground">{sub}</span>
+      </CardContent>
+    </Card>
   );
 }
