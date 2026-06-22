@@ -68,16 +68,17 @@ export interface RunStat extends Tally {
 export function computeStats(decisions: DecisionRow[]): { overall: Tally; runs: RunStat[] } {
   const overall = tally(decisions);
 
+  const EARLIER = "__earlier__"; // decisions made before run-tagging — grouped together
   const byRun = new Map<string, DecisionRow[]>();
   for (const d of decisions) {
-    if (!d.runId) continue;
-    if (!byRun.has(d.runId)) byRun.set(d.runId, []);
-    byRun.get(d.runId)!.push(d);
+    const key = d.runId || EARLIER;
+    if (!byRun.has(key)) byRun.set(key, []);
+    byRun.get(key)!.push(d);
   }
 
   const runs: RunStat[] = [...byRun.entries()].map(([runId, ds]) => ({
     runId,
-    dealer: ds.find((d) => d.dealer)?.dealer ?? "unknown",
+    dealer: runId === EARLIER ? "Earlier reviews" : ds.find((d) => d.dealer)?.dealer ?? "unknown",
     ranAt: ds[ds.length - 1]?.ts ?? null,
     ...tally(ds),
   }));
