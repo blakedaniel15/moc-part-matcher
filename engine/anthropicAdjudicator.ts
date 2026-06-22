@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { Part } from "./types";
+import type { Part, Archetype } from "./types";
 import type { Adjudicator, AdjudicationVerdict } from "./adjudicator";
 
 export interface AdjudicatorDeps {
@@ -8,14 +8,16 @@ export interface AdjudicatorDeps {
   fetchImpl?: typeof fetch;
   catalogVersion?: string;
   cache?: { get(h: string): Promise<AdjudicationVerdict | null>; set(h: string, v: AdjudicationVerdict): Promise<void> };
+  // Context that makes the model smarter — all sent as a CACHED prompt prefix.
+  catalog?: Archetype[]; // the real MOC products to choose from
+  aliases?: Record<string, string[]>; // bare# -> dealer names (from approved mappings)
+  examples?: { name: string; barePartNumber: string }[]; // few-shot: dealer name -> bare#
 }
 
 export function contentHash(part: Part, catalogVersion: string): string {
   return createHash("sha256").update(`${part.sku}|${part.partName}|${catalogVersion}`).digest("hex");
 }
 
-// Structured tool-use schema — the model is forced to call `classify` and return a
-// typed array, so we never parse free-form text or strip ``` fences.
 const TOOL = {
   name: "classify",
   description: "Return a classification verdict for each part.",
@@ -65,13 +67,7 @@ export class AnthropicAdjudicator implements Adjudicator {
         const v = verdicts.find((x) => x.index === k + 1);
         const part = toAsk[k].part;
         const verdict: AdjudicationVerdict = v
-          ? {
-              sku: part.sku,
-              matched: !!v.matched,
-              mocPartNumber: v.mocPartNumber ?? null,
-              confidence: v.confidence ?? null,
-              reason: v.reason ?? "",
-            }
+          ? { sku: part.sku, matched: !!v.matched, mocPartNumber: v.mocPartNumber ?? null, confidence: v.confidence ?? null, reason: v.reason ?? "" }
           : { sku: part.sku, matched: false, mocPartNumber: null, confidence: null, reason: "No verdict returned" };
         out[toAsk[k].i] = verdict;
         if (this.deps.cache && v) await this.deps.cache.set(contentHash(part, cv), verdict);
@@ -83,32 +79,61 @@ export class AnthropicAdjudicator implements Adjudicator {
     );
   }
 
+  // Static context (instructions + catalog + aliases + examples). Sent as a cached
+  // prefix so the big catalog block is billed at ~10% after the first call.
+  private buildContext(): string {
+    const catalog = this.deps.catalog ?? [];
+    const aliases = this.deps.aliases ?? {};
+    const examples = this.deps.examples ?? [];
+
+    const catLines = catalog
+      .map((a) => {
+        const al = aliases[a.barePartNumber];
+        const alStr = al && al.length ? ` | dealers call it: ${al.slice(0, 6).join(" / ")}` : "";
+        return `${a.barePartNumber} | ${a.manufacturerPart}${alStr}`;
+      })
+      .join("\n");
+
+    const exLines = examples
+      .slice(0, 14)
+      .map((e) => `"${e.name}" → ${e.barePartNumber}`)
+      .join("\n");
+
+    return [
+      "You are an automotive parts matching expert for MOC Products (a distributor of automotive chemicals, fluids, cleaners and service kits).",
+      "For each dealer DMS part, decide if it is one of the MOC PRODUCTS listed below.",
+      "The part number is the primary signal (~70%); the DMS name supports it (~30%). A matching name on a clearly-wrong number is UNMATCHED.",
+      "Dealers use their own short/abbreviated names — use the aliases and examples to recognize them.",
+      "If a part is a mechanical/OEM component (sensor, element, bracket, filter, assembly, lamp, gasket, bearing, valve, etc.) it is NOT a MOC product unless both the number AND the name clearly match a chemical/kit product.",
+      "Return mocPartNumber as the exact bare number from the catalog, or null if there is no good match. Prefer null over a low-confidence guess.",
+      "",
+      catalog.length ? "MOC PRODUCTS (bare# | name | aliases):\n" + catLines : "",
+      exLines ? "\nEXAMPLES (dealer DMS name → MOC bare#):\n" + exLines : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+
   private async callApi(parts: Part[]): Promise<any[]> {
     const f = this.deps.fetchImpl ?? fetch;
     const partsList = parts
       .map((p, idx) => `${idx + 1}. SKU: ${p.sku} | Bare#: ${p.barePartNumber} | Structure: ${p.structural.label} | DMS Name: ${p.partName}`)
       .join("\n");
-    const prompt =
-      "You are an automotive parts matching expert for MOC Products. For each part, decide if it matches a MOC product archetype. " +
-      "Part number is the primary signal (~70%); the name supports it (~30%). A matching name on a wrong number is UNMATCHED. " +
-      "Use the classify tool. Use a 1-based index per part.\n\nPARTS:\n" + partsList;
 
     let lastErr: unknown;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const res = await f("https://api.anthropic.com/v1/messages", {
           method: "POST",
-          headers: {
-            "content-type": "application/json",
-            "x-api-key": this.deps.apiKey,
-            "anthropic-version": "2023-06-01",
-          },
+          headers: { "content-type": "application/json", "x-api-key": this.deps.apiKey, "anthropic-version": "2023-06-01" },
           body: JSON.stringify({
             model: this.deps.model,
             max_tokens: 4000,
             tools: [TOOL],
             tool_choice: { type: "tool", name: "classify" },
-            messages: [{ role: "user", content: prompt }],
+            // Cached prefix: instructions + catalog + aliases + examples.
+            system: [{ type: "text", text: this.buildContext(), cache_control: { type: "ephemeral" } }],
+            messages: [{ role: "user", content: "PARTS TO CLASSIFY (1-based index):\n" + partsList }],
           }),
         });
         if (!(res as any).ok) throw new Error(`HTTP ${(res as any).status}`);
