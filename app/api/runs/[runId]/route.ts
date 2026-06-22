@@ -3,6 +3,7 @@ import { db } from "../../../../db/client";
 import { loadRunSnapshot } from "../../../../db/repo";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(_req: Request, { params }: { params: { runId: string } }) {
   try {

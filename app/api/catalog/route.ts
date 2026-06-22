@@ -3,6 +3,7 @@ import { db } from "../../../db/client";
 import { loadCatalogFull } from "../../../db/repo";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {

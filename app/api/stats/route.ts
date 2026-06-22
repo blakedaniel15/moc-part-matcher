@@ -4,6 +4,7 @@ import { loadDecisions } from "../../../db/repo";
 import { computeStats } from "../../../lib/stats";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
