@@ -1,5 +1,6 @@
 import type { Part, Archetype, Confidence } from "./types";
 import { numericCore, skuComplexity, isMechanicalName } from "./heuristics";
+import { nameOverlap } from "./exact";
 
 // A "store-like" prefix is what dealers prepend before the full MOC number:
 // all-identical digits (88888, 00000) or a short run (≤4). An OEM part segment
@@ -69,6 +70,14 @@ export function fuzzyMatch(
 
   const complexity = skuComplexity(part.sku);
   const mechName = isMechanicalName(part.partName);
+
+  // NAME-COROBBORATION GUARD: a number-only match to a clearly-OEM/mechanical part
+  // whose name shares NO words with the MOC product is almost always a coincidental
+  // number collision (e.g. "ELEMENT ASY - AIR CLE" → 02031 transmission kit). Reject
+  // it from the deterministic fuzzy pass — the AI pass can still adjudicate it.
+  if (mechName && nameOverlap(part.partName, archetype.manufacturerPart) === 0) {
+    return null;
+  }
 
   let confidence: Confidence;
   if (complexity === "suspect") {

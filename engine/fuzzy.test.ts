@@ -60,3 +60,20 @@ describe("fuzzyMatch 2b store-prefix guard", () => {
     expect(fuzzyMatch(p2b("SU9418801201", "9418801201", "NUT LOCK"), cat2b)).toBeNull();
   });
 });
+
+describe("fuzzyMatch name-corroboration guard", () => {
+  const cat = [{ barePartNumber: "02031", manufacturerPart: "02031 - KIT, TRANSMISSION SERVICE, 2-PART", incentive: 0 }];
+  const p = (sku: string, bare: string, name: string): Part => ({
+    sku, partName: name, makeCode: null, barePartNumber: bare, dmsType: "CDK",
+    structural: { score: 0, label: "UNLIKELY", detail: "" },
+  });
+
+  it("rejects OEM mechanical name that coincidentally shares a number", () => {
+    // FA2031 (core 2031) numerically matches 02031, but the name is an air-cleaner element.
+    expect(fuzzyMatch(p("FA2031", "FA2031", "ELEMENT ASY - AIR CLE"), cat)).toBeNull();
+  });
+  it("keeps a chemical cross-name match (different name, not mechanical)", () => {
+    const r = fuzzyMatch(p("2031", "2031", "TRANS SERVICE KIT"), cat);
+    expect(r?.archetype.barePartNumber).toBe("02031");
+  });
+});
