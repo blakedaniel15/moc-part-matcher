@@ -52,21 +52,26 @@ export async function loadCatalogFull(sql: SqlExec): Promise<{ barePartNumber: s
   return rows.map((r) => ({ barePartNumber: r.bare_part_number, manufacturerPart: r.manufacturer_part, source: r.source }));
 }
 
-// Save a finished file's results snapshot (the run history).
+// Save a file's results snapshot (the run history). status is 'in_progress' when
+// the run is created (match completion / ingest) and 'reviewed' once the user
+// clicks Done. Defaults to 'in_progress' so a created run is never lost.
 export async function saveRunSnapshot(
   sql: SqlExec,
-  r: { runId: string; dealer: string; fileName: string; total: number; matched: number; review: number; unmatched: number; snapshot: unknown }
+  r: { runId: string; dealer: string; fileName: string; total: number; matched: number; review: number; unmatched: number; snapshot: unknown; status?: string }
 ): Promise<void> {
-  await sql`insert into run_snapshots (run_id, dealer, file_name, total, matched, review, unmatched, snapshot)
-    values (${r.runId}, ${r.dealer}, ${r.fileName}, ${r.total}, ${r.matched}, ${r.review}, ${r.unmatched}, ${JSON.stringify(r.snapshot)}::jsonb)
+  await sql`insert into run_snapshots (run_id, dealer, file_name, total, matched, review, unmatched, snapshot, status)
+    values (${r.runId}, ${r.dealer}, ${r.fileName}, ${r.total}, ${r.matched}, ${r.review}, ${r.unmatched}, ${JSON.stringify(r.snapshot)}::jsonb, ${r.status ?? "in_progress"})
     on conflict (run_id) do update set dealer = excluded.dealer, file_name = excluded.file_name, total = excluded.total,
-      matched = excluded.matched, review = excluded.review, unmatched = excluded.unmatched, snapshot = excluded.snapshot, ran_at = now()`;
+      matched = excluded.matched, review = excluded.review, unmatched = excluded.unmatched, snapshot = excluded.snapshot,
+      status = excluded.status, ran_at = now()`;
 }
 
 export async function loadRunSummaries(
   sql: SqlExec
-): Promise<{ runId: string; dealer: string; fileName: string; total: number; matched: number; review: number; unmatched: number; ranAt: string }[]> {
-  const rows = await sql`select run_id, dealer, file_name, total, matched, review, unmatched, ran_at from run_snapshots order by ran_at desc limit 200`;
+): Promise<{ runId: string; dealer: string; fileName: string; total: number; matched: number; review: number; unmatched: number; status: string; decided: number; ranAt: string }[]> {
+  const rows = await sql`select rs.run_id, rs.dealer, rs.file_name, rs.total, rs.matched, rs.review, rs.unmatched, rs.status, rs.ran_at,
+      (select count(distinct d.sku) from decisions d where d.run_id = rs.run_id) as decided
+    from run_snapshots rs order by rs.ran_at desc limit 200`;
   return rows.map((r) => ({
     runId: r.run_id,
     dealer: r.dealer ?? "",
@@ -75,6 +80,8 @@ export async function loadRunSummaries(
     matched: r.matched,
     review: r.review,
     unmatched: r.unmatched,
+    status: r.status ?? "reviewed",
+    decided: Number(r.decided ?? 0),
     ranAt: typeof r.ran_at === "string" ? r.ran_at : new Date(r.ran_at).toISOString(),
   }));
 }
@@ -83,6 +90,12 @@ export async function loadRunSnapshot(sql: SqlExec, runId: string): Promise<{ ru
   const rows = await sql`select run_id, dealer, file_name, snapshot from run_snapshots where run_id = ${runId}`;
   if (!rows[0]) return null;
   return { runId: rows[0].run_id, dealer: rows[0].dealer ?? "", fileName: rows[0].file_name ?? "", snapshot: rows[0].snapshot };
+}
+
+// The latest decision per SKU for a run, so reopening restores the Yes/No state.
+export async function loadRunDecisions(sql: SqlExec, runId: string): Promise<Record<string, string>> {
+  const rows = await sql`select distinct on (sku) sku, outcome from decisions where run_id = ${runId} order by sku, ts desc`;
+  return Object.fromEntries(rows.map((r) => [r.sku, r.outcome]));
 }
 
 export async function loadDealerKeys(sql: SqlExec): Promise<string[]> {

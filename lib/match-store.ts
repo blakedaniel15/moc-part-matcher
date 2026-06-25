@@ -10,6 +10,7 @@ export interface StoredRun {
   runId: string;
   knownCount?: number; // SKUs skipped as already-known (gap mode)
   dealerKey?: string;
+  decisions?: Record<string, string>; // prior Yes/No decisions, restored on reopen
 }
 
 // Results are passed from the Upload screen to the Results screen via sessionStorage

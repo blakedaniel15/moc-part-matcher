@@ -103,6 +103,7 @@ export async function POST(req: Request) {
     await saveRunSnapshot(sql, {
       runId: batchId, dealer: dealerName, fileName: `ingest ${body.period.start}..${body.period.end}`,
       total: gap.length, matched, review: 0, unmatched: gap.length - matched, snapshot: results,
+      status: "in_progress", // new parts await the team's review in-tool
     });
     await insertBatch(sql, {
       batchId, idempotencyKey: idempotencyKey || batchId, storeId: body.store.id,

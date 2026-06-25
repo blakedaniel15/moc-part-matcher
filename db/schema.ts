@@ -85,6 +85,10 @@ export async function runMigration(sql: Sql): Promise<void> {
     snapshot jsonb,
     ran_at timestamptz not null default now()
   )`;
+  // 'in_progress' | 'reviewed'. Default 'reviewed' so existing rows (all written
+  // by the old Done-only flow, hence finished) backfill correctly; every writer
+  // passes status explicitly going forward.
+  await sql`alter table run_snapshots add column if not exists status text not null default 'reviewed'`;
   await sql`create table if not exists dealers (
     key text primary key,
     name text not null,

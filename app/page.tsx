@@ -11,6 +11,7 @@ import { parseKnownFile, type KnownList } from "../lib/known-list";
 import { computeGap } from "../lib/gap";
 import { normalizeDealerKey, matchDealer } from "../lib/dealer";
 import { saveRun } from "../lib/match-store";
+import type { MatchResult } from "../engine/types";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -90,8 +91,34 @@ export default function UploadPage() {
         setStatus("idle");
         return;
       }
-      const results = await res.json();
+      const results: MatchResult[] = await res.json();
       const runId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `run-${Date.now()}`;
+
+      // Persist immediately as "in progress" so the review is never lost if the
+      // user navigates away before clicking Done (decisions already save live).
+      const isMatched = (r: MatchResult) =>
+        r.matchType === "EXACT" || r.matchType === "FUZZY" || (r.matchType === "AI" && (r.confidence === "HIGH" || r.confidence === "MEDIUM"));
+      const isReview = (r: MatchResult) => r.matchType === "AI" && r.confidence === "LOW";
+      try {
+        await fetch("/api/runs", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            runId,
+            dealer: dealerName,
+            fileName: file.name,
+            total: results.length,
+            matched: results.filter(isMatched).length,
+            review: results.filter(isReview).length,
+            unmatched: results.filter((r) => r.matchType === "UNMATCHED").length,
+            snapshot: results,
+            status: "in_progress",
+          }),
+        });
+      } catch {
+        /* best-effort; the run still lives in sessionStorage for this tab */
+      }
+
       saveRun({ results, dealerName, fileName: file.name, ranAt: new Date().toISOString(), runId, knownCount, dealerKey });
       router.push("/results");
     } catch (e) {

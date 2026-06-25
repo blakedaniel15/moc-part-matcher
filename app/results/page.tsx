@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Table2, CheckCircle2, UploadCloud, Loader2, ChevronRight, Download } from "lucide-react";
+import { Table2, CheckCircle2, UploadCloud, Loader2, ChevronRight, Download, Clock } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/card";
 import { ResultsTable } from "../../components/match/results-table";
 import { Button } from "../../components/ui/button";
 import { loadRun, clearRun, saveRun, type StoredRun } from "../../lib/match-store";
 import { candidateRows, downloadCandidates } from "../../lib/candidate-export";
+import { cn } from "../../lib/utils";
 import type { MatchResult } from "../../engine/types";
 
 const isMatched = (r: MatchResult) =>
@@ -29,7 +30,24 @@ interface RunSummary {
   matched: number;
   review: number;
   unmatched: number;
+  status: string; // 'in_progress' | 'reviewed'
+  decided: number; // distinct SKUs decided so far
   ranAt: string;
+}
+
+function StatusChip({ status }: { status: string }) {
+  const inProgress = status === "in_progress";
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset",
+        inProgress ? "bg-amber-50 text-amber-700 ring-amber-200" : "bg-exact/10 text-exact ring-exact/20"
+      )}
+    >
+      {inProgress ? <Clock className="h-3 w-3" aria-hidden /> : <CheckCircle2 className="h-3 w-3" aria-hidden />}
+      {inProgress ? "In progress" : "Reviewed"}
+    </span>
+  );
 }
 
 const fmtDate = (iso: string) => {
@@ -63,7 +81,7 @@ export default function ResultsPage() {
         await fetch("/api/runs", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ runId: run.runId, dealer: run.dealerName, fileName: run.fileName, ...counts(run.results), snapshot: run.results }),
+          body: JSON.stringify({ runId: run.runId, dealer: run.dealerName, fileName: run.fileName, ...counts(run.results), snapshot: run.results, status: "reviewed" }),
         });
       } catch {
         /* snapshot save is best-effort */
@@ -87,6 +105,7 @@ export default function ResultsPage() {
         fileName: d.fileName || "",
         runId: d.runId,
         ranAt: new Date().toISOString(),
+        decisions: d.decisions && typeof d.decisions === "object" ? d.decisions : {},
       };
       saveRun(reopened);
       setRun(reopened);
@@ -127,7 +146,14 @@ export default function ResultsPage() {
             </Button>
           </div>
         </div>
-        <ResultsTable results={run.results} dealer={run.dealerName} runId={run.runId} onDecisionsChange={(d) => setDecisions(d)} />
+        <ResultsTable
+          key={run.runId}
+          results={run.results}
+          dealer={run.dealerName}
+          runId={run.runId}
+          initialDecisions={run.decisions}
+          onDecisionsChange={(d) => setDecisions(d)}
+        />
       </div>
     );
   }
@@ -160,7 +186,7 @@ export default function ResultsPage() {
             </span>
             <div>
               <h3 className="text-sm font-semibold">No files yet</h3>
-              <p className="mt-1 max-w-sm text-sm text-muted-foreground">Upload a dealer file and run a match. Finished files show up here.</p>
+              <p className="mt-1 max-w-sm text-sm text-muted-foreground">Upload a dealer file and run a match. Your files — in progress and reviewed — show up here.</p>
             </div>
             <Link href="/">
               <Button variant="accent" size="sm">
@@ -178,9 +204,10 @@ export default function ResultsPage() {
                 <tr>
                   <th className="px-4 py-2.5 text-left font-medium">Dealer</th>
                   <th className="px-4 py-2.5 text-left font-medium">File</th>
-                  <th className="px-4 py-2.5 text-left font-medium">Reviewed</th>
+                  <th className="px-4 py-2.5 text-left font-medium">Status</th>
+                  <th className="px-4 py-2.5 text-left font-medium">When</th>
                   <th className="px-4 py-2.5 text-right font-medium">Parts</th>
-                  <th className="px-4 py-2.5 text-right font-medium">Matched</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Reviewed</th>
                   <th className="px-4 py-2.5 text-right font-medium"></th>
                 </tr>
               </thead>
@@ -189,9 +216,12 @@ export default function ResultsPage() {
                   <tr key={h.runId} className="cursor-pointer hover:bg-muted/40" onClick={() => reopen(h.runId)}>
                     <td className="px-4 py-2.5 font-medium">{h.dealer || "—"}</td>
                     <td className="max-w-xs truncate px-4 py-2.5 text-muted-foreground" title={h.fileName}>{h.fileName || "—"}</td>
+                    <td className="px-4 py-2.5"><StatusChip status={h.status} /></td>
                     <td className="px-4 py-2.5 text-muted-foreground">{fmtDate(h.ranAt)}</td>
                     <td className="tnum px-4 py-2.5 text-right">{h.total}</td>
-                    <td className="tnum px-4 py-2.5 text-right">{h.matched}</td>
+                    <td className="tnum px-4 py-2.5 text-right text-muted-foreground">
+                      <span className={h.decided >= h.total && h.total > 0 ? "text-exact" : undefined}>{h.decided}</span> / {h.total}
+                    </td>
                     <td className="px-4 py-2.5 text-right text-muted-foreground">
                       {reopening === h.runId ? <Loader2 className="ml-auto h-4 w-4 animate-spin" aria-hidden /> : <ChevronRight className="ml-auto h-4 w-4" aria-hidden />}
                     </td>

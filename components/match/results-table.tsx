@@ -63,15 +63,27 @@ function DecisionButtons({
   );
 }
 
+// Keep only the Yes/No outcomes the buttons can render (a "correct" decision
+// resolved a row via the picker and isn't a Yes/No toggle).
+function pickYesNo(d?: Record<string, string>): Record<string, Decision> {
+  const out: Record<string, Decision> = {};
+  for (const [sku, outcome] of Object.entries(d ?? {})) {
+    if (outcome === "approve" || outcome === "reject") out[sku] = outcome;
+  }
+  return out;
+}
+
 export function ResultsTable({
   results,
   dealer,
   runId,
+  initialDecisions,
   onDecisionsChange,
 }: {
   results: MatchResult[];
   dealer: string;
   runId: string;
+  initialDecisions?: Record<string, string>;
   onDecisionsChange?: (d: Record<string, Decision>) => void;
 }) {
   const [data, setData] = useState<MatchResult[]>(results);
@@ -81,7 +93,8 @@ export function ResultsTable({
   const [cataloged, setCataloged] = useState<Set<string>>(new Set());
 
   // Decision state owned here so the Yes/No highlight persists across re-renders.
-  const [decided, setDecided] = useState<Record<string, Decision>>({});
+  // Seeded from prior decisions when an in-progress run is reopened.
+  const [decided, setDecided] = useState<Record<string, Decision>>(() => pickYesNo(initialDecisions));
   const [savingSku, setSavingSku] = useState<string | null>(null);
   const [errorSku, setErrorSku] = useState<string | null>(null);
 

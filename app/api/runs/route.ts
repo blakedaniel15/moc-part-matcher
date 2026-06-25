@@ -28,6 +28,7 @@ export async function POST(req: Request) {
       review: r.review ?? 0,
       unmatched: r.unmatched ?? 0,
       snapshot: r.snapshot ?? [],
+      status: r.status ?? "in_progress",
     });
     return NextResponse.json({ ok: true });
   } catch (e) {
