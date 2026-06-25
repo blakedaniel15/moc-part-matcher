@@ -85,6 +85,16 @@ export async function loadRunSnapshot(sql: SqlExec, runId: string): Promise<{ ru
   return { runId: rows[0].run_id, dealer: rows[0].dealer ?? "", fileName: rows[0].file_name ?? "", snapshot: rows[0].snapshot };
 }
 
+export async function loadDealerKeys(sql: SqlExec): Promise<string[]> {
+  const rows = await sql`select key from dealers order by name`;
+  return rows.map((r) => r.key);
+}
+
+export async function upsertDealer(sql: SqlExec, d: { key: string; name: string; dmsType: string | null }): Promise<void> {
+  await sql`insert into dealers (key, name, dms_type) values (${d.key}, ${d.name}, ${d.dmsType})
+    on conflict (key) do update set name = excluded.name, dms_type = coalesce(excluded.dms_type, dealers.dms_type), last_seen_at = now()`;
+}
+
 // All decisions (oldest first) for the Stats identification-rate computation.
 export async function loadDecisions(
   sql: SqlExec

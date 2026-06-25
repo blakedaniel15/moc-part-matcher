@@ -5,6 +5,7 @@ import type { AdjudicationVerdict } from "../../../engine/adjudicator";
 import { db } from "../../../db/client";
 import { loadCatalog, loadApproved, loadBlockedSkus } from "../../../db/repo";
 import { config, requireEnv } from "../../../lib/config";
+import { buildDealerProfile } from "../../../lib/dealer-profile";
 
 export const runtime = "nodejs";
 
@@ -25,6 +26,14 @@ export async function POST(req: Request) {
       seenExample.add(a.barePartNumber);
     }
   }
+
+  // Dealer-scoped profile from the delivered known mappings — sharpens this
+  // dealer's new parts, merged ahead of the global aliases/examples.
+  const dealerProfile = buildDealerProfile(Array.isArray(body.knownMappings) ? body.knownMappings : []);
+  for (const [moc, names] of Object.entries(dealerProfile.aliases)) {
+    aliases[moc] = [...new Set([...(names as string[]), ...(aliases[moc] || [])])];
+  }
+  const mergedExamples = [...dealerProfile.examples, ...examples].slice(0, 14);
 
   // Catalog version invalidates cached verdicts when the catalog changes.
   const catalogVersion = `v${catalog.length}`;
@@ -55,7 +64,7 @@ export async function POST(req: Request) {
     model: config.anthropicModel,
     catalog,
     aliases,
-    examples,
+    examples: mergedExamples,
     catalogVersion,
     cache,
   });

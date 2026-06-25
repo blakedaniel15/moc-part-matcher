@@ -85,4 +85,11 @@ export async function runMigration(sql: Sql): Promise<void> {
     snapshot jsonb,
     ran_at timestamptz not null default now()
   )`;
+  await sql`create table if not exists dealers (
+    key text primary key,
+    name text not null,
+    dms_type text null,
+    created_at timestamptz not null default now(),
+    last_seen_at timestamptz not null default now()
+  )`;
 }
