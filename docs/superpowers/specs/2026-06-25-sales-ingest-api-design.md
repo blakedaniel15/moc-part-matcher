@@ -134,6 +134,18 @@ in the **Support Requests** list (`list_id 901106848667`):
 - Ingest is small per request (~1k lines); bursty weekly load is fine without a
   queue at this scale. Revisit a queue only past ~thousands of stores.
 
+## Resolved decisions
+
+- **API key:** a single shared, rotatable key (`Authorization: Bearer …`). Rotation
+  is infrequent (a couple times a year), so no per-store keys or auto-rotation.
+- **ClickUp:** `CLICKUP_API_TOKEN` (and `CLICKUP_LIST_ID`) are set as Vercel env
+  vars by Blake; the app just reads them.
+- **Known SKUs (gap baseline):** `gap = sold − (knownSkus ∪ decided-in-tool)`.
+  Today "known" = SKUs decided in this tool (manual review). When decisions move
+  to Easy Wins, Easy Wins sends the verified-setup SKUs in `knownSkus` (already in
+  the contract) — forward-compatible, minimal rework. **The exact Easy-Wins
+  decision-verification mechanism is pending Blake** but does NOT block the build.
+
 ## Out of scope
 
 - Cron scheduling on our side (Easy Wins pushes on its cadence).
@@ -142,8 +154,7 @@ in the **Support Requests** list (`list_id 901106848667`):
 
 ## Open items for the plan
 
-- API key storage: single shared key vs per-store keys (start single).
-- Partitioning mechanism: declarative monthly partitions vs a single table with
-  indexes first, partition when row counts warrant (start single + indexes;
-  partition is a later migration).
+- Partitioning mechanism: start with a single `sales_lines` table + indexes;
+  convert to declarative monthly partitions as a later migration when row counts
+  warrant. (Not required for the first version.)
 - Exact ClickUp task description format / whether to assign a default user.
