@@ -8,6 +8,8 @@ export interface StoredRun {
   fileName: string;
   ranAt: string;
   runId: string;
+  knownCount?: number; // SKUs skipped as already-known (gap mode)
+  dealerKey?: string;
 }
 
 // Results are passed from the Upload screen to the Results screen via sessionStorage

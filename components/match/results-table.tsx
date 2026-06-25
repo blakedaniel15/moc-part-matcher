@@ -63,7 +63,17 @@ function DecisionButtons({
   );
 }
 
-export function ResultsTable({ results, dealer, runId }: { results: MatchResult[]; dealer: string; runId: string }) {
+export function ResultsTable({
+  results,
+  dealer,
+  runId,
+  onDecisionsChange,
+}: {
+  results: MatchResult[];
+  dealer: string;
+  runId: string;
+  onDecisionsChange?: (d: Record<string, Decision>) => void;
+}) {
   const [data, setData] = useState<MatchResult[]>(results);
   const [filter, setFilter] = useState<Filter>("all");
   const [addingRow, setAddingRow] = useState<MatchResult | null>(null);
@@ -85,7 +95,9 @@ export function ResultsTable({ results, dealer, runId }: { results: MatchResult[
         body: JSON.stringify({ dealer, runId, outcome, row }),
       });
       if (!res.ok) throw new Error();
-      setDecided((prev) => ({ ...prev, [row.sku]: outcome }));
+      const next = { ...decided, [row.sku]: outcome };
+      setDecided(next);
+      onDecisionsChange?.(next);
     } catch {
       setErrorSku(row.sku);
     } finally {

@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Table2, CheckCircle2, UploadCloud, Loader2, ChevronRight } from "lucide-react";
+import { Table2, CheckCircle2, UploadCloud, Loader2, ChevronRight, Download } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/card";
 import { ResultsTable } from "../../components/match/results-table";
 import { Button } from "../../components/ui/button";
 import { loadRun, clearRun, saveRun, type StoredRun } from "../../lib/match-store";
+import { candidateRows, downloadCandidates } from "../../lib/candidate-export";
 import type { MatchResult } from "../../engine/types";
 
 const isMatched = (r: MatchResult) =>
@@ -41,6 +42,7 @@ export default function ResultsPage() {
   const [history, setHistory] = useState<RunSummary[] | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [reopening, setReopening] = useState<string | null>(null);
+  const [decisions, setDecisions] = useState<Record<string, string>>({});
 
   const loadHistory = useCallback(() => {
     fetch("/api/runs")
@@ -105,16 +107,27 @@ export default function ResultsPage() {
           <div>
             <h2 className="text-xl font-semibold tracking-tight">{run.dealerName || "Results"}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              <span className="tnum">{c.total}</span> parts · <span className="tnum">{c.matched}</span> matched · from{" "}
+              <span className="tnum">{c.total}</span> parts · <span className="tnum">{c.matched}</span> matched
+              {run.knownCount ? <> · <span className="tnum">{run.knownCount}</span> known skipped</> : null} · from{" "}
               <span className="font-medium">{run.fileName}</span> · decisions save automatically
             </p>
           </div>
-          <Button variant="primary" size="sm" onClick={finish}>
-            <CheckCircle2 className="h-4 w-4" aria-hidden />
-            Done — save &amp; file it
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => downloadCandidates(candidateRows(run.results, decisions), `${run.dealerName || "candidates"}.xlsx`)}
+            >
+              <Download className="h-4 w-4" aria-hidden />
+              Export candidates
+            </Button>
+            <Button variant="primary" size="sm" onClick={finish}>
+              <CheckCircle2 className="h-4 w-4" aria-hidden />
+              Done — save &amp; file it
+            </Button>
+          </div>
         </div>
-        <ResultsTable results={run.results} dealer={run.dealerName} runId={run.runId} />
+        <ResultsTable results={run.results} dealer={run.dealerName} runId={run.runId} onDecisionsChange={(d) => setDecisions(d)} />
       </div>
     );
   }
