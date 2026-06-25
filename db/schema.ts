@@ -92,4 +92,41 @@ export async function runMigration(sql: Sql): Promise<void> {
     created_at timestamptz not null default now(),
     last_seen_at timestamptz not null default now()
   )`;
+  // Weekly sales-ingest tables (see /api/v1/sales).
+  await sql`create table if not exists ingest_batches (
+    batch_id text primary key,
+    idempotency_key text unique,
+    store_id text not null,
+    period_start date null,
+    period_end date null,
+    line_count integer not null default 0,
+    distinct_skus integer not null default 0,
+    new_parts integer not null default 0,
+    status text not null default 'done',
+    received_at timestamptz not null default now()
+  )`;
+  await sql`create table if not exists sales_lines (
+    id bigserial primary key,
+    batch_id text not null,
+    store_id text not null,
+    dealer_sku text not null,
+    sku_description text null,
+    op_code text null,
+    op_description text null,
+    vehicle_make text null,
+    quantity_sold integer null,
+    sale_date date null,
+    cost numeric null,
+    sale numeric null,
+    ingested_at timestamptz not null default now()
+  )`;
+  await sql`create index if not exists sales_lines_store_sku on sales_lines (store_id, dealer_sku)`;
+  await sql`create index if not exists sales_lines_store_date on sales_lines (store_id, sale_date)`;
+  await sql`create table if not exists dealer_known_skus (
+    dealer_key text not null,
+    sku text not null,
+    source text not null default 'decided',
+    updated_at timestamptz not null default now(),
+    primary key (dealer_key, sku)
+  )`;
 }

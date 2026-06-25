@@ -76,7 +76,8 @@ else is best-effort. Dates ISO `YYYY-MM-DD`. ≤ ~5,000 lines/request.
 2. **Idempotency:** if `Idempotency-Key` already processed, return the prior result.
 3. **Store raw lines** in `sales_lines` (append-only) under a new `batchId`.
 4. **Dedupe** to distinct SKUs (keep the richest line per SKU for name/op/make).
-5. **Gap** = distinct SKUs − (`knownSkus` ∪ SKUs already decided for this dealer).
+5. **Update known set:** upsert any delivered `knownSkus` into `dealer_known_skus`.
+   **Gap** = distinct SKUs − `dealer_known_skus(dealer)` (fed by deliveries + in-tool decisions).
 6. **Match** the gap through the existing engine (catalog + dealer profile + AI).
 7. **Store** the gap candidates as a run (reuse `run_snapshots`), tagged to the dealer.
 8. **Return** the summary; if `newParts > 0`, **create a ClickUp task** (below).
@@ -111,6 +112,9 @@ in the **Support Requests** list (`list_id 901106848667`):
 - **`ingest_batches`:** `batch_id (pk), idempotency_key (unique), store_id,
   period_start, period_end, line_count, distinct_skus, new_parts, status,
   received_at`. Drives idempotency + audit.
+- **`dealer_known_skus`:** `(dealer_key, sku) pk, source ('easywins'|'decided'),
+  updated_at`. The persistent gap baseline; upserted from deliveries and from
+  in-tool decisions.
 - **Reused:** `dealers`, `decisions`, `run_snapshots`, `archetypes`,
   `approved_mappings`, `ai_verdict_cache`.
 
@@ -140,11 +144,13 @@ in the **Support Requests** list (`list_id 901106848667`):
   is infrequent (a couple times a year), so no per-store keys or auto-rotation.
 - **ClickUp:** `CLICKUP_API_TOKEN` (and `CLICKUP_LIST_ID`) are set as Vercel env
   vars by Blake; the app just reads them.
-- **Known SKUs (gap baseline):** `gap = sold − (knownSkus ∪ decided-in-tool)`.
-  Today "known" = SKUs decided in this tool (manual review). When decisions move
-  to Easy Wins, Easy Wins sends the verified-setup SKUs in `knownSkus` (already in
-  the contract) — forward-compatible, minimal rework. **The exact Easy-Wins
-  decision-verification mechanism is pending Blake** but does NOT block the build.
+- **Known SKUs (gap baseline) — STORED.** A persistent per-dealer known set
+  (`dealer_known_skus`) is the single gap baseline. Both sources feed it: SKUs
+  **decided in this tool** (manual review) and **`knownSkus` delivered by Easy
+  Wins** are upserted into it. So `gap = sold − dealer_known_skus(dealer)`, and a
+  batch never has to re-send the full known list — the stored set persists and a
+  delivered list just refreshes/extends it. **The exact Easy-Wins decision-
+  verification mechanism is pending Blake** but does NOT block the build.
 
 ## Out of scope
 

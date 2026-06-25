@@ -106,6 +106,7 @@ export class AnthropicAdjudicator implements Adjudicator {
       "Dealers use their own short/abbreviated names — use the aliases and examples to recognize them.",
       "If a part is a mechanical/OEM component (sensor, element, bracket, filter, assembly, lamp, gasket, bearing, valve, etc.) it is NOT a MOC product unless both the number AND the name clearly match a chemical/kit product.",
       "Return mocPartNumber as the exact bare number from the catalog, or null if there is no good match. Prefer null over a low-confidence guess.",
+      "A service operation or vehicle make may be given per part. Use it ONLY to LOWER confidence (or move a match to LOW/Review) when the service clearly contradicts the product (e.g. matched to a brake fluid but the service is OIL CHANGE). Never raise confidence based on it.",
       "",
       catalog.length ? "MOC PRODUCTS (bare# | name | aliases):\n" + catLines : "",
       exLines ? "\nEXAMPLES (dealer DMS name → MOC bare#):\n" + exLines : "",
@@ -117,7 +118,11 @@ export class AnthropicAdjudicator implements Adjudicator {
   private async callApi(parts: Part[]): Promise<any[]> {
     const f = this.deps.fetchImpl ?? fetch;
     const partsList = parts
-      .map((p, idx) => `${idx + 1}. SKU: ${p.sku} | Bare#: ${p.barePartNumber} | Structure: ${p.structural.label} | DMS Name: ${p.partName}`)
+      .map((p, idx) => {
+        const op = p.opDescription ? ` | Service: ${p.opDescription}` : "";
+        const mk = p.vehicleMake ? ` | Make: ${p.vehicleMake}` : "";
+        return `${idx + 1}. SKU: ${p.sku} | Bare#: ${p.barePartNumber} | Structure: ${p.structural.label} | DMS Name: ${p.partName}${op}${mk}`;
+      })
       .join("\n");
 
     let lastErr: unknown;

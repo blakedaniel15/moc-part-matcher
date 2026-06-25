@@ -128,6 +128,41 @@ export async function addDealerRejection(sql: SqlExec, dealer: string, sku: stri
     on conflict (dealer, sku) do nothing`;
 }
 
+// ---- Sales ingest (see /api/v1/sales) -------------------------------------
+
+// The persistent per-dealer known-SKU set — the gap baseline.
+export async function loadKnownSkus(sql: SqlExec, dealerKey: string): Promise<Set<string>> {
+  const rows = await sql`select sku from dealer_known_skus where dealer_key = ${dealerKey}`;
+  return new Set(rows.map((r) => String(r.sku).trim().toUpperCase()));
+}
+
+export async function upsertKnownSkus(sql: SqlExec, dealerKey: string, skus: string[], source: string): Promise<void> {
+  for (const sku of skus) {
+    await sql`insert into dealer_known_skus (dealer_key, sku, source) values (${dealerKey}, ${sku}, ${source})
+      on conflict (dealer_key, sku) do update set source = excluded.source, updated_at = now()`;
+  }
+}
+
+export async function getBatchByIdempotency(sql: SqlExec, key: string): Promise<any | null> {
+  const rows = await sql`select batch_id, distinct_skus, new_parts, line_count from ingest_batches where idempotency_key = ${key}`;
+  return rows[0] ?? null;
+}
+
+export async function insertBatch(
+  sql: SqlExec,
+  b: { batchId: string; idempotencyKey: string; storeId: string; periodStart: string; periodEnd: string; lineCount: number; distinctSkus: number; newParts: number }
+): Promise<void> {
+  await sql`insert into ingest_batches (batch_id, idempotency_key, store_id, period_start, period_end, line_count, distinct_skus, new_parts)
+    values (${b.batchId}, ${b.idempotencyKey}, ${b.storeId}, ${b.periodStart}, ${b.periodEnd}, ${b.lineCount}, ${b.distinctSkus}, ${b.newParts})`;
+}
+
+export async function insertSalesLines(sql: SqlExec, batchId: string, storeId: string, lines: any[]): Promise<void> {
+  for (const l of lines) {
+    await sql`insert into sales_lines (batch_id, store_id, dealer_sku, sku_description, op_code, op_description, vehicle_make, quantity_sold, sale_date, cost, sale)
+      values (${batchId}, ${storeId}, ${l.dealerSku}, ${l.skuDescription ?? null}, ${l.opCode ?? null}, ${l.opDescription ?? null}, ${l.vehicleMake ?? null}, ${l.quantitySold ?? null}, ${l.saleDate ?? null}, ${l.cost ?? null}, ${l.sale ?? null})`;
+  }
+}
+
 // Add a new MOC product to the catalog (source 'custom' so it's distinguishable
 // from the official import).
 export async function upsertArchetype(

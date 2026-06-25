@@ -16,6 +16,8 @@ export interface Part {
   barePartNumber: string;
   dmsType: DmsType;
   structural: Structural;
+  opDescription?: string; // service operation (downgrade-only AI signal)
+  vehicleMake?: string;
 }
 
 export interface Archetype {
