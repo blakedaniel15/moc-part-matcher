@@ -28,6 +28,14 @@ export async function POST(req: Request) {
     if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 });
     const body = v.body;
 
+    // Dry run: auth + validation + de-dup only, no storage/matching/notify — lets
+    // integrators test their key and payload shape against the real endpoint with
+    // zero side effects. Trigger with ?dryRun=1 or a top-level "dryRun": true.
+    const dryRun = new URL(req.url).searchParams.get("dryRun") === "1" || raw?.dryRun === true;
+    if (dryRun) {
+      return NextResponse.json({ ok: true, dryRun: true, received: body.lines.length, distinctSkus: distinctSkus(body.lines).length });
+    }
+
     const sql: any = db();
     const idempotencyKey = req.headers.get("idempotency-key") || "";
     if (idempotencyKey) {

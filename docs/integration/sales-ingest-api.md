@@ -10,7 +10,7 @@ have — **~half a day of work.**
 ## Endpoint
 
 ```
-POST https://moc-part-matcher.vercel.app/api/v1/sales
+POST https://parts.ez-wins.com/api/v1/sales
 ```
 
 ### Headers
@@ -103,7 +103,7 @@ and notify onboarding.
 ## Working example
 
 ```bash
-curl -X POST https://moc-part-matcher.vercel.app/api/v1/sales \
+curl -X POST https://parts.ez-wins.com/api/v1/sales \
   -H "Authorization: Bearer <API_KEY>" \
   -H "Idempotency-Key: STORE-1234-2026-06-16" \
   -H "Content-Type: application/json" \
@@ -120,7 +120,7 @@ curl -X POST https://moc-part-matcher.vercel.app/api/v1/sales \
 
 Node (fetch):
 ```js
-await fetch("https://moc-part-matcher.vercel.app/api/v1/sales", {
+await fetch("https://parts.ez-wins.com/api/v1/sales", {
   method: "POST",
   headers: {
     "Authorization": `Bearer ${process.env.MOC_API_KEY}`,
@@ -130,6 +130,30 @@ await fetch("https://moc-part-matcher.vercel.app/api/v1/sales", {
   body: JSON.stringify({ store, period, lines }),
 });
 ```
+
+---
+
+## Testing (no data created)
+
+Two zero-side-effect ways to verify your integration before sending real data:
+
+**1. Health + auth + schema** — `GET /api/v1/health` (no body):
+```bash
+curl https://parts.ez-wins.com/api/v1/health -H "Authorization: Bearer <API_KEY>"
+```
+Returns `200` with the contract and `"auth": "ok"` (or `"invalid"` / `"none"`), so
+you can confirm reachability, your key, and the exact field list.
+
+**2. Dry-run a real payload** — add `?dryRun=1` to the live endpoint:
+```bash
+curl -X POST "https://parts.ez-wins.com/api/v1/sales?dryRun=1" \
+  -H "Authorization: Bearer <API_KEY>" -H "Content-Type: application/json" \
+  -d '{ "store": { "id": "STORE-1234" }, "period": { "start": "2026-06-16", "end": "2026-06-22" },
+        "lines": [ { "dealerSku": "FA2031" } ] }'
+```
+Validates auth + payload shape and returns `{ "ok": true, "dryRun": true, "received": 1, "distinctSkus": 1 }`
+— **nothing is stored, matched, or sent to onboarding.** A bad payload returns the
+same `400` with the field error you'd get live. Drop `?dryRun=1` to go live.
 
 ---
 
