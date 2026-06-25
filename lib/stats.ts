@@ -29,6 +29,17 @@ export interface Tally {
   denominator: number; // all confirmed MOC parts = hits + rescued
   rate: number; // hits / denominator (0..1)
   decided: number; // total parts with any verdict (approve/correct/reject)
+  reviewFlagged: number; // parts the system sent to the Review bucket (from the match output)
+  parts: number; // total parts in the file(s) (from the match output)
+}
+
+// Per-run match-output counts (from run_snapshots), independent of decisions.
+export interface RunSummaryInput {
+  runId: string;
+  dealer: string;
+  review: number;
+  total: number;
+  ranAt: string | null;
 }
 
 // Dedupe to the latest decision per (run, sku); input must be ordered by ts ascending.
@@ -56,7 +67,8 @@ function tally(decisions: DecisionRow[]): Tally {
   }
 
   const denominator = hits + rescuedReview + rescuedUnmatched;
-  return { hits, rescuedReview, rescuedUnmatched, falsePositives, denominator, rate: denominator ? hits / denominator : 0, decided };
+  // reviewFlagged/parts come from the match output (run snapshots), set in computeStats.
+  return { hits, rescuedReview, rescuedUnmatched, falsePositives, denominator, rate: denominator ? hits / denominator : 0, decided, reviewFlagged: 0, parts: 0 };
 }
 
 export interface RunStat extends Tally {
@@ -65,8 +77,14 @@ export interface RunStat extends Tally {
   ranAt: string | null;
 }
 
-export function computeStats(decisions: DecisionRow[]): { overall: Tally; runs: RunStat[] } {
-  const overall = tally(decisions);
+export function computeStats(decisions: DecisionRow[], runSummaries: RunSummaryInput[] = []): { overall: Tally; runs: RunStat[] } {
+  // Decisions drive identification / false-positive rates; run snapshots drive the
+  // review load (parts the system flagged for review, regardless of decisions).
+  const overall: Tally = {
+    ...tally(decisions),
+    reviewFlagged: runSummaries.reduce((a, s) => a + (s.review || 0), 0),
+    parts: runSummaries.reduce((a, s) => a + (s.total || 0), 0),
+  };
 
   const EARLIER = "__earlier__"; // decisions made before run-tagging — grouped together
   const byRun = new Map<string, DecisionRow[]>();
@@ -75,13 +93,22 @@ export function computeStats(decisions: DecisionRow[]): { overall: Tally; runs: 
     if (!byRun.has(key)) byRun.set(key, []);
     byRun.get(key)!.push(d);
   }
+  const summaryByRun = new Map(runSummaries.map((s) => [s.runId, s]));
 
-  const runs: RunStat[] = [...byRun.entries()].map(([runId, ds]) => ({
-    runId,
-    dealer: runId === EARLIER ? "Earlier reviews" : ds.find((d) => d.dealer)?.dealer ?? "unknown",
-    ranAt: ds[ds.length - 1]?.ts ?? null,
-    ...tally(ds),
-  }));
+  // A run appears if it has decisions OR a saved snapshot.
+  const runIds = new Set<string>([...summaryByRun.keys(), ...byRun.keys()]);
+  const runs: RunStat[] = [...runIds].map((runId) => {
+    const ds = byRun.get(runId) ?? [];
+    const s = summaryByRun.get(runId);
+    return {
+      runId,
+      dealer: runId === EARLIER ? "Earlier reviews" : s?.dealer || ds.find((d) => d.dealer)?.dealer || "unknown",
+      ranAt: s?.ranAt ?? ds[ds.length - 1]?.ts ?? null,
+      ...tally(ds),
+      reviewFlagged: s?.review ?? 0,
+      parts: s?.total ?? 0,
+    };
+  });
   runs.sort((a, b) => (b.ranAt ?? "").localeCompare(a.ranAt ?? ""));
 
   return { overall, runs };

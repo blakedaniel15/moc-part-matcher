@@ -99,10 +99,14 @@ export async function POST(req: Request) {
     }
 
     // Persist a run snapshot for the in-tool review.
-    const matched = results.filter((r) => r.matchedPartNumber).length;
+    const isMatchedR = (r: MatchResult) =>
+      r.matchType === "EXACT" || r.matchType === "FUZZY" || (r.matchType === "AI" && (r.confidence === "HIGH" || r.confidence === "MEDIUM"));
+    const matched = results.filter(isMatchedR).length;
+    const review = results.filter((r) => r.matchType === "AI" && r.confidence === "LOW").length;
+    const unmatched = results.filter((r) => r.matchType === "UNMATCHED").length;
     await saveRunSnapshot(sql, {
       runId: batchId, dealer: dealerName, fileName: `ingest ${body.period.start}..${body.period.end}`,
-      total: gap.length, matched, review: 0, unmatched: gap.length - matched, snapshot: results,
+      total: gap.length, matched, review, unmatched, snapshot: results,
       status: "in_progress", // new parts await the team's review in-tool
     });
     await insertBatch(sql, {

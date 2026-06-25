@@ -20,7 +20,8 @@ const fmtDate = (iso: string | null) => {
 
 // Three KPIs derived from a tally.
 const idRate = (t: Tally) => (t.denominator ? t.hits / t.denominator : 0);
-const reviewRate = (t: Tally) => (t.denominator ? t.rescuedReview / t.denominator : 0);
+// Review load: parts the system flagged for review / total parts (from match output).
+const reviewRate = (t: Tally) => (t.parts ? t.reviewFlagged / t.parts : 0);
 const fpRate = (t: Tally) => {
   const base = t.hits + t.falsePositives;
   return base ? t.falsePositives / base : 0;
@@ -90,8 +91,8 @@ export default function StatsPage() {
             />
             <Kpi
               label="Review rate"
-              value={data.overall.denominator ? pct(reviewRate(data.overall)) : "—"}
-              sub={`${data.overall.rescuedReview} needed manual review`}
+              value={data.overall.parts ? pct(reviewRate(data.overall)) : "—"}
+              sub={`${data.overall.reviewFlagged} of ${data.overall.parts} flagged for review`}
               tone="warn"
             />
             <Kpi
@@ -133,7 +134,7 @@ export default function StatsPage() {
                         <td className="px-4 py-2.5">{r.dealer}</td>
                         <td className="px-4 py-2.5 text-muted-foreground">{fmtDate(r.ranAt)}</td>
                         <td className="tnum px-4 py-2.5 text-right font-medium text-accent">{r.denominator ? pct(idRate(r)) : "—"}</td>
-                        <td className="tnum px-4 py-2.5 text-right text-fuzzy">{r.denominator ? pct(reviewRate(r)) : "—"}</td>
+                        <td className="tnum px-4 py-2.5 text-right text-fuzzy">{r.parts ? pct(reviewRate(r)) : "—"}</td>
                         <td className={`tnum px-4 py-2.5 text-right ${r.falsePositives ? "text-destructive" : "text-muted-foreground"}`}>
                           {r.hits + r.falsePositives ? pct(fpRate(r)) : "—"}
                         </td>
