@@ -13,6 +13,7 @@ export interface IngestBody {
   store: { id: string; name?: string; dmsType?: string };
   period: { start: string; end: string };
   knownSkus?: string[];
+  initial?: boolean; // true for a store's first (onboarding) sync — affects the ClickUp task wording
   lines: SaleLine[];
 }
 

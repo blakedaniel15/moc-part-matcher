@@ -127,7 +127,7 @@ export async function POST(req: Request) {
     const token = process.env.CLICKUP_API_TOKEN, listId = process.env.CLICKUP_LIST_ID;
     if (gap.length && token && listId) {
       try {
-        await createClickUpTask({ token, listId }, newPartsTask(dealerName, results));
+        await createClickUpTask({ token, listId }, newPartsTask(dealerName, results, { initial: body.initial }));
       } catch (e) {
         console.error("ClickUp notify failed:", e);
       }

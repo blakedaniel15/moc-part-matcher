@@ -1,13 +1,17 @@
 import type { MatchResult } from "../engine/types";
 
-export function newPartsTask(dealer: string, results: MatchResult[]): { name: string; markdown: string } {
-  const name = `New MOC parts — ${dealer} (${results.length} to set up)`;
+export function newPartsTask(dealer: string, results: MatchResult[], opts: { initial?: boolean } = {}): { name: string; markdown: string } {
+  const n = results.length;
+  const name = opts.initial ? `Initial setup — ${dealer} (${n} part${n === 1 ? "" : "s"} to set up)` : `New MOC parts — ${dealer} (${n} to set up)`;
+  const intro = opts.initial
+    ? `**Initial sync** for **${dealer}** — ${n} part${n === 1 ? "" : "s"} to set up in Easy Wins.`
+    : `**${n} new part(s)** found for **${dealer}** — set up in Easy Wins.`;
   const header = "| Dealer SKU | DMS Name | Suggested MOC # | Product | Confidence |\n|---|---|---|---|---|";
   const rows = results.map(
     (r) =>
       `| ${r.sku} | ${r.partName || "—"} | ${r.matchedPartNumber || "—"} | ${r.matchedArchetype ? r.matchedArchetype.replace(/^\d+\s*-\s*/, "") : "—"} | ${r.confidence || "—"} |`
   );
-  const markdown = `**${results.length} new part(s)** found for **${dealer}** — set up in Easy Wins.\n\n${header}\n${rows.join("\n")}`;
+  const markdown = `${intro}\n\n${header}\n${rows.join("\n")}`;
   return { name, markdown };
 }
 

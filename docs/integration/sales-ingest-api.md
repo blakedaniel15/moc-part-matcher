@@ -43,6 +43,8 @@ de-duplicate for matching and keep the raw lines).
 
   "knownSkus": ["8888804461", "A01071"], // optional — SKUs already set up for this store (the
                                           // gap baseline). Omit for now; we'll confirm when to send it.
+  "initial": true,                        // optional — true on a store's FIRST (onboarding) sync;
+                                          // omit/false for weekly. Only changes the onboarding ticket wording.
 
   "lines": [                          // REQUIRED — non-empty, max 5000 per request
     {
@@ -157,16 +159,39 @@ same `400` with the field error you'd get live. Drop `?dryRun=1` to go live.
 
 ---
 
+## When to send (two triggers)
+
+Same endpoint, same payload — just fired at two moments:
+
+1. **First sync (onboarding).** Once, when a store's initial data sync finishes,
+   send its current parts sales. This establishes the store's baseline so the
+   onboarding team can set everything up. (Optionally mark it — see `initial`
+   below.)
+2. **Weekly thereafter.** Each week, send that week's parts sales. We diff against
+   what's already set up and only surface the genuinely new parts.
+
+Both are the same `POST /api/v1/sales`. You don't track which is which on your end
+beyond choosing when to call it.
+
+### First-sync notes
+- The **5,000-line cap is per request.** A large onboarding backfill should be
+  **de-duplicated to distinct SKUs** before sending (you don't need every
+  historical sale for setup — one line per SKU is enough), or split into multiple
+  requests for the same store.
+- If you can include `knownSkus` (SKUs already set up for that store), the first
+  sync surfaces only the *gap*. If you omit it, the first sync surfaces *all*
+  parts for a full onboarding review — both are valid; tell us which you want.
+
 ## What you need to build (the whole job)
 
-1. A weekly job, per store, that selects that week's parts sales (the rows you
-   already report on).
+1. A per-store job that selects parts sales — **weekly**, plus a **one-time run
+   when a store's first data sync completes**.
 2. Map each row to a `line` (`dealerSku` + whatever else you have).
 3. POST one request per store with an `Idempotency-Key`; on a non-2xx, retry with
    the **same** key.
 
 That's it — no schema for us to design on your side, no callbacks to handle, no
-state to keep. One key, one POST per store per week.
+state to keep. One key, one POST per store per send.
 
 ---
 

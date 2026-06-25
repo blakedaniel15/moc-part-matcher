@@ -15,6 +15,7 @@ const CONTRACT = {
     "store.name",
     "store.dmsType",
     "knownSkus",
+    "initial",
     "lines[].skuDescription",
     "lines[].opCode",
     "lines[].opDescription",
