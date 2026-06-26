@@ -34,7 +34,7 @@ de-duplicate for matching and keep the raw lines).
   "store": {
     "id":      "STORE-1234",          // REQUIRED — your stable, unique store identifier
     "name":    "Modesto Toyota",      // optional — display name (used for our labels + the ClickUp ticket)
-    "dmsType": "R&R"                  // optional — "R&R" | "CDK" (informational)
+    "dmsType": "R&R"                  // optional — informational (your DMS vendor); we auto-detect format from the SKUs
   },
   "period": {
     "start": "2026-06-16",            // REQUIRED — week start, ISO date YYYY-MM-DD (inclusive)
@@ -202,3 +202,14 @@ state to keep. One key, one POST per store per send.
 - Cadence is whatever you choose (weekly is the plan); we don't schedule anything.
 - `knownSkus` is optional today. As Easy Wins becomes the system of record for
   what's "set up," sending it sharpens which parts we flag — we'll confirm timing.
+
+### Request size, timing & concurrency
+
+- The response can take a few seconds when there are **new parts** — we run AI
+  matching over them inside the request. Use a **client timeout of ~60s**.
+- Keep each request to roughly **a few hundred *new* parts**. A normal weekly run
+  has only a handful, so this matters mainly for a **large first sync** — split a
+  big onboarding backfill into several requests (per the dedup guidance above)
+  rather than one giant one.
+- For the weekly run across many stores, **stagger the sends** (a steady stream,
+  not all stores at the same instant).

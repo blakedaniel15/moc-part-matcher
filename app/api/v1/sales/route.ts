@@ -17,6 +17,7 @@ import {
 import { config, requireEnv } from "../../../../lib/config";
 
 export const runtime = "nodejs";
+export const maxDuration = 60; // gap matching runs AI synchronously; allow headroom over the default
 
 export async function POST(req: Request) {
   try {
