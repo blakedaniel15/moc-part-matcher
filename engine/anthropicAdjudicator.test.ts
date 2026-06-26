@@ -42,4 +42,25 @@ describe("AnthropicAdjudicator", () => {
   it("contentHash is stable for same input", () => {
     expect(contentHash(part("X1", "SHYFT"), "v1")).toBe(contentHash(part("X1", "SHYFT"), "v1"));
   });
+
+  it("batches a large gap into multiple model calls and maps verdicts back in order", async () => {
+    // Fake that answers each call with a matched verdict per part it received
+    // (index 1-based within that call), so we can verify slicing + alignment.
+    const f = vi.fn(async (_url: string, opts: any) => {
+      const n = (JSON.parse(opts.body).messages[0].content.match(/^\d+\. SKU:/gm) || []).length;
+      const results = Array.from({ length: n }, (_, k) => ({ index: k + 1, matched: true, mocPartNumber: "04461", confidence: "HIGH", reason: "" }));
+      return { ok: true, json: async () => ({ content: [{ type: "tool_use", name: "classify", input: { results } }] }) };
+    }) as any;
+
+    const adj = new AnthropicAdjudicator({ apiKey: "k", model: "m", fetchImpl: f, batchSize: 2 });
+    const parts = ["A", "B", "C", "D", "E"].map((s) => part(s, s));
+    const out = await adj.adjudicate(parts);
+
+    // 5 parts at batchSize 2 -> three calls of sizes 2, 2, 1.
+    const sizes = f.mock.calls.map((c: any) => (JSON.parse(c[1].body).messages[0].content.match(/^\d+\. SKU:/gm) || []).length);
+    expect(sizes).toEqual([2, 2, 1]);
+    // Every part gets its own verdict, in the original order (no cross-batch bleed).
+    expect(out.map((v) => v.sku)).toEqual(["A", "B", "C", "D", "E"]);
+    expect(out.every((v) => v.matched)).toBe(true);
+  });
 });

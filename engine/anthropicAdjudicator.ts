@@ -7,6 +7,7 @@ export interface AdjudicatorDeps {
   model: string;
   fetchImpl?: typeof fetch;
   catalogVersion?: string;
+  batchSize?: number; // model calls are chunked to this size so a large gap never overflows one response (default 30)
   cache?: { get(h: string): Promise<AdjudicationVerdict | null>; set(h: string, v: AdjudicationVerdict): Promise<void> };
   // Context that makes the model smarter — all sent as a CACHED prompt prefix.
   catalog?: Archetype[]; // the real MOC products to choose from
@@ -61,15 +62,20 @@ export class AnthropicAdjudicator implements Adjudicator {
       parts.forEach((part, i) => toAsk.push({ i, part }));
     }
 
-    if (toAsk.length) {
-      const verdicts = await this.callApi(toAsk.map((t) => t.part));
-      for (let k = 0; k < toAsk.length; k++) {
+    // Batch the model calls so a large gap never overflows one response's token
+    // budget (which would silently drop the parts past the cutoff). Each call's
+    // verdict `index` is 1-based WITHIN its batch.
+    const batchSize = this.deps.batchSize && this.deps.batchSize > 0 ? this.deps.batchSize : 30;
+    for (let start = 0; start < toAsk.length; start += batchSize) {
+      const batch = toAsk.slice(start, start + batchSize);
+      const verdicts = await this.callApi(batch.map((t) => t.part));
+      for (let k = 0; k < batch.length; k++) {
         const v = verdicts.find((x) => x.index === k + 1);
-        const part = toAsk[k].part;
+        const part = batch[k].part;
         const verdict: AdjudicationVerdict = v
           ? { sku: part.sku, matched: !!v.matched, mocPartNumber: v.mocPartNumber ?? null, confidence: v.confidence ?? null, reason: v.reason ?? "" }
           : { sku: part.sku, matched: false, mocPartNumber: null, confidence: null, reason: "No verdict returned" };
-        out[toAsk[k].i] = verdict;
+        out[batch[k].i] = verdict;
         if (this.deps.cache && v) await this.deps.cache.set(contentHash(part, cv), verdict);
       }
     }

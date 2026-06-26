@@ -102,7 +102,7 @@ export async function POST(req: Request) {
 
       const adjudicator = new AnthropicAdjudicator({
         apiKey: requireEnv("ANTHROPIC_API_KEY"), model: config.anthropicModel,
-        catalog, aliases, examples, catalogVersion, cache,
+        catalog, aliases, examples, catalogVersion, cache, batchSize: config.batchSize,
       });
       results = await runPipeline(gap, { catalog, approved, blockedSkus, dealerRejections: [], dealerBrand: "all", adjudicator });
     }

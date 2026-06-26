@@ -67,6 +67,7 @@ export async function POST(req: Request) {
     examples: mergedExamples,
     catalogVersion,
     cache,
+    batchSize: config.batchSize,
   });
 
   const results = await runMatch(body, { catalog, approved, blockedSkus, dealerRejections: [], adjudicator });
