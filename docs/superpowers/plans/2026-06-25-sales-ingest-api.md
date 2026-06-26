@@ -635,5 +635,5 @@ git commit -m "feat: /api/v1/sales ingest route (auth, idempotent, gap, ClickUp)
 
 ## Notes
 - After deploy, **re-run `/setup`** to create `ingest_batches`, `sales_lines`, `dealer_known_skus`.
-- Env vars to add in Vercel: `INGEST_API_KEY` (the bearer key for the dev team), `CLICKUP_API_TOKEN`, `CLICKUP_LIST_ID` (901106848667).
+- Env vars to add in Vercel: `INGEST_API_KEY` (the bearer key for the dev team), `CLICKUP_API_TOKEN`, `CLICKUP_LIST_ID` (901114015118 — Internal Requests).
 - Partitioning `sales_lines` is a later migration when volume warrants.

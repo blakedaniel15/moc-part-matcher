@@ -94,7 +94,7 @@ unaffected.
 ## ClickUp notification
 
 When a dealer's run yields `newParts > 0`, create **one task per dealer per run**
-in the **Support Requests** list (`list_id 901106848667`):
+in the **Internal Requests** list (`list_id 901114015118`):
 
 - **Title:** `New MOC parts — <Dealer> (<N> to set up)`
 - **Description (markdown):** a table of the new parts: Dealer SKU · DMS Name ·
