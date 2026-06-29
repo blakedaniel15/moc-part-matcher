@@ -139,6 +139,7 @@ export async function runMigration(sql: Sql): Promise<void> {
   await sql`create table if not exists service_lines (
     op_line_id text primary key,
     store_id text not null,
+    store_name text null,
     ro text not null,
     line text not null,
     op_code text not null,
@@ -151,6 +152,7 @@ export async function runMigration(sql: Sql): Promise<void> {
     batch_id text null,
     ingested_at timestamptz not null default now()
   )`;
+  await sql`alter table service_lines add column if not exists store_name text`;
   await sql`create index if not exists service_lines_store_op on service_lines (store_id, op_code)`;
   await sql`create table if not exists service_parts (
     id bigserial primary key,

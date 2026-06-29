@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
     // Store both grains (op lines + parts) under a new batch id.
     const batchId = (globalThis.crypto?.randomUUID?.() ?? `batch-${dealerKey}-${body.period.start}`) as string;
-    await insertServiceData(sql, batchId, body.store.id, body.opLines);
+    await insertServiceData(sql, batchId, body.store.id, dealerName, body.opLines);
 
     // Parts side: flatten parts (with their op description), then diff against the
     // dealer's known set. Op-code classification reads service_lines separately.
