@@ -241,6 +241,40 @@ validation, **gap detection** (which op codes for this dealer aren't mapped yet)
 and a **ClickUp notification** when a dealer has new unmapped op codes. See the
 shared **Service Data Ingest API** contract for the exact payload.
 
+### Getting this tool onto the shared database
+
+The parts tool's ingest is the **single writer** of `service_lines` /
+`service_parts`. This tool is a **reader**. To wire it up:
+
+1. **Same connection string.** Give this app's Vercel project the **same Neon
+   `DATABASE_URL` / `POSTGRES_URL`** as the parts tool — one database, both apps
+   connect. Set up its own Neon **preview branch** + `PREVIEW_DATABASE_URL`
+   (preferred when `VERCEL_ENV=preview`) so preview testing never touches prod.
+2. **Read `service_lines`** (op code + description + correction + pay_type + labor +
+   hours); join `service_parts` if you want the parts that rode along. **No separate
+   ingest** — the data is already there.
+3. **Do NOT create the shared tables.** `service_lines` / `service_parts` are owned
+   by the parts tool's `/setup`. This tool's `/setup` creates **only its own** tables.
+4. **Namespace every table with `opcode_`** so nothing collides in the shared DB
+   (both tools otherwise have `decisions`, `run_snapshots`, `aliases`, …):
+
+   ```
+   opcode_menu_items · opcode_learned_mappings · opcode_aliases
+   opcode_decisions  · opcode_run_snapshots    · opcode_ai_verdict_cache
+   opcode_blocked    · opcode_known
+   ```
+
+   `dealers` is **shared / read-only** — one dealer registry for both tools; don't
+   recreate it.
+
+5. **Trigger.** Keep the two apps **decoupled**: this tool reads new batches from
+   `service_lines` (by `batch_id` / `ingested_at`) and classifies on its own
+   schedule or a manual run. *Optionally*, later, fan out from the parts ingest so
+   one POST classifies both — but decoupled is simpler to ship first.
+
+Everything else (review UI, decisions, stats) uses the `opcode_`-prefixed tables and
+is identical to the parts tool — see the **Review UI + Stats handoff** doc.
+
 ---
 
 ## 10. Build sequence (milestones, in order)
