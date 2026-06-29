@@ -5,9 +5,9 @@ operation lines and the parts under them — to one authenticated endpoint. One
 feed, one database; it powers **both** the parts matcher and the op-code
 identifier. Your side is a single HTTPS POST of data you already export.
 
-> **Status:** this is the **target contract (v2)**. The live endpoint is being
-> updated from the previous flat shape to this nested one — **don't integrate yet**;
-> we'll confirm when it's live (the health/dry-run endpoints will report v2).
+> **Status: live (v2).** The endpoint accepts this nested shape; `GET /api/v1/health`
+> reports `version: v2`. You're clear to integrate — start with the health + dry-run
+> checks below.
 
 ---
 
