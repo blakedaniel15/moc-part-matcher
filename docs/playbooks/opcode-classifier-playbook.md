@@ -115,6 +115,10 @@ stable within a dealer), and the deterministic pass is keyword-based, not numeri
 - **`decisions`**, **`run_snapshots`**, **`ai_verdict_cache`**: same as the parts
   tool — decisions drive metrics; snapshots persist each run (with `status`
   in_progress|reviewed); the verdict cache makes re-runs free.
+- **`service_lines` / `service_parts`** (the **input**, shared with the parts matcher
+  — see §9): this tool classifies the rows in `service_lines` (`op_code`,
+  `op_description`, `correction`, `pay_type`, `labor_sale`, `tech_hours`). It does
+  not own these tables; the shared ingest fills them.
 
 ---
 
@@ -209,19 +213,33 @@ Targets to aim for (tune to your data): ≥90% identification, ≤2% false posit
 
 ---
 
-## 9. Free leverage: share the ingest feed
+## 9. Shared ingest + database (one feed, two grains)
 
-A dealer's service feed already carries **both** `opCode` **and** `opDescription`
-per line (the parts tool ingests them today). So this tool does **not** need its own
-data feed — it's the **same payload, a second classifier**. Two options:
+This tool and the parts matcher **share one ingest and one database** — the
+integrator builds a single feed. A repair order is a hierarchy: **op lines (jobs)
+→ parts (under each job)**, delivered nested so each fact is sent once at its level.
 
-- **Sibling endpoint** that runs op-code classification on the same posted batch, or
-- **One ingest that fans out** to both the parts classifier and the op-code classifier.
+**Shared tables (the ingest writes these once; both tools read their grain):**
 
-Either way the integrator builds **one** thing. Mirror the proven ingest contract:
-`POST` with **Bearer auth**, an **Idempotency-Key**, validation, **dedup to distinct
-items**, **gap detection** (which op codes for this dealer aren't mapped yet), and a
-**notification** (e.g. a ClickUp task) when a dealer has new unmapped services.
+```sql
+service_lines   -- op-line grain  ← THIS tool reads here
+  op_line_id (PK = store|ro|line) · store · ro · line
+  · op_code · op_description · correction · pay_type
+  · labor_sale · tech_hours · sale_date
+
+service_parts   -- part grain     ← the parts matcher reads here
+  id (PK) · op_line_id (FK) · dealer_sku · part_name · qty · sale · cost
+```
+
+`labor_sale` / `tech_hours` (op-line grain) are this tool's headline metrics;
+`pay_type` (CWI) and `correction` are extra classification signals. The op-line key
+`store|ro|line` links parts to their op line, so labor is never double-counted, and
+this tool can see the parts that rode along (a secondary signal).
+
+The ingest is the proven one: `POST` with **Bearer auth**, an **Idempotency-Key**,
+validation, **gap detection** (which op codes for this dealer aren't mapped yet),
+and a **ClickUp notification** when a dealer has new unmapped op codes. See the
+shared **Service Data Ingest API** contract for the exact payload.
 
 ---
 

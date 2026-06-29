@@ -1,9 +1,25 @@
-# MOC Part Matcher — Sales Ingest API
+# Service Data Ingest API
 
-**For the Easy Wins dev team.** Push each store's weekly parts-sales data to one
-authenticated endpoint. We detect the new parts not yet set up, match them, and
-notify our onboarding team. Your side is a single HTTPS POST of JSON you already
-have — **~half a day of work.**
+**For the Easy Wins dev team.** Push each store's service data — repair-order
+operation lines and the parts under them — to one authenticated endpoint. One
+feed, one database; it powers **both** the parts matcher and the op-code
+identifier. Your side is a single HTTPS POST of data you already export.
+
+> **Status:** this is the **target contract (v2)**. The live endpoint is being
+> updated from the previous flat shape to this nested one — **don't integrate yet**;
+> we'll confirm when it's live (the health/dry-run endpoints will report v2).
+
+---
+
+## The shape: one hierarchy, two grains
+
+A repair order is **op lines (the jobs) → parts (under each job)**. Send it nested,
+so each fact is sent once at its own level — labor/hours per op line, SKU/qty per
+part. (A flat one-row-per-part export duplicates labor across parts; nesting avoids
+that entirely.)
+
+- **Op-code identifier** reads the **op lines** (op code + description + labor + hours).
+- **Parts matcher** reads the **parts** (SKU + name), with the op description for context.
 
 ---
 
@@ -17,61 +33,64 @@ POST https://parts.ez-wins.com/api/v1/sales
 
 | Header | Required | Value |
 |--------|----------|-------|
-| `Authorization` | ✅ | `Bearer <API_KEY>` — the key we share with you (kept in your secrets, not in code). |
+| `Authorization` | ✅ | `Bearer <API_KEY>` — the key we share with you (in your secrets). |
 | `Content-Type` | ✅ | `application/json` |
-| `Idempotency-Key` | recommended | A unique string per weekly batch (e.g. a UUID, or `"<storeId>-<weekStart>"`). Re-sending the same key returns the original result instead of double-processing. Makes retries safe. |
+| `Idempotency-Key` | recommended | Unique per batch (e.g. `"<storeId>-<weekStart>"`). Re-sending the same key returns the original result — safe retries. |
 
 ---
 
 ## Request body
 
-One request = **one store, one period**. `lines` is one object **per individual
-sale** (the same SKU can appear many times across the week — that's expected; we
-de-duplicate for matching and keep the raw lines).
+One request = **one store, one period**. `opLines` is one object per RO operation
+line; each carries its **own** parts.
 
 ```jsonc
 {
-  "store": {
-    "id":      "STORE-1234",          // REQUIRED — your stable, unique store identifier
-    "name":    "Modesto Toyota",      // optional — display name (used for our labels + the ClickUp ticket)
-    "dmsType": "R&R"                  // optional — informational (your DMS vendor); we auto-detect format from the SKUs
-  },
-  "period": {
-    "start": "2026-06-16",            // REQUIRED — week start, ISO date YYYY-MM-DD (inclusive)
-    "end":   "2026-06-22"             // REQUIRED — week end,   ISO date YYYY-MM-DD (inclusive)
-  },
+  "store":  { "id": "STORE-1234", "name": "Toyota of Gallatin" }, // id REQUIRED; name optional
+  "period": { "start": "2026-05-16", "end": "2026-06-16" },       // REQUIRED, ISO YYYY-MM-DD
 
-  "knownSkus": ["8888804461", "A01071"], // optional — SKUs already set up for this store (the
-                                          // gap baseline). Omit for now; we'll confirm when to send it.
-  "initial": true,                        // optional — true on a store's FIRST (onboarding) sync;
-                                          // omit/false for weekly. Only changes the onboarding ticket wording.
-
-  "lines": [                          // REQUIRED — non-empty, max 5000 per request
+  "opLines": [                          // REQUIRED — non-empty
     {
-      "dealerSku":      "FA2031",                 // REQUIRED — the DMS part SKU
-      "skuDescription": "ELEMENT ASY - AIR CLE",  // optional — part name/description
-      "opCode":         "BR01",                   // optional — service operation code
-      "opDescription":  "BRAKE FLUSH SERVICE",    // optional — service operation description
-      "vehicleMake":    "TOYOTA",                 // optional
-      "quantitySold":   1,                        // optional — integer
-      "saleDate":       "2026-06-18",             // optional — ISO date YYYY-MM-DD
-      "cost":           12.34,                    // optional — number
-      "sale":           24.99                     // optional — number
+      "ro":            "50863",         // REQUIRED — repair order number  ┐ together these
+      "line":          "1",            // REQUIRED — operations line number ┘ uniquely key the op line
+      "opCode":        "10KSYN",       // REQUIRED — the service op code
+      "opDescription": "12 Months/10,000 Mile Service (ToyotaCare)", // strongly recommended — primary signal
+      "correction":    "Performed 10k service; rotated tires", // optional — tech correction text (extra signal)
+      "payType":       "WM",           // optional — CWI / pay-coverage (warranty / internal / customer)
+      "laborSale":     66.53,          // optional — number
+      "techHours":     0.50,           // optional — number
+      "saleDate":      "2026-05-18",   // optional — RO close date, ISO YYYY-MM-DD
+
+      "parts": [                       // optional — 0..n parts under THIS op line
+        {
+          "dealerSku": "04152-YZZA1",  // REQUIRED (per part) — the part SKU
+          "partName":  "OIL FILTER",   // recommended — part description
+          "qty":       1,              // optional — number
+          "sale":      9.50,           // optional — number
+          "cost":      6.20            // optional — number
+        }
+      ]
     }
-    // … one object per sale
   ]
 }
 ```
 
 ### Field rules
 
-- **Required:** `store.id`, `period.start`, `period.end`, and every line's `dealerSku`.
-- **Everything else is optional** — send what you have; missing fields are fine.
-- Dates are `YYYY-MM-DD`. `dealerSku` and `skuDescription` are the most useful
-  signals for matching — send those whenever available.
-- **Max 5,000 lines per request.** At ~1,000 sales/store/week you're well under;
-  if a store ever exceeds it, split into multiple requests (each with its own
-  `Idempotency-Key`).
+- **Required:** `store.id`, `period.start`, `period.end`, and for every op line
+  `ro` + `line` + `opCode`. Each part needs a `dealerSku`.
+- `opDescription` and `partName` are the matching signals — **send them whenever
+  available.**
+- An op line with no parts is fine (`"parts": []` or omitted).
+- Everything else is optional — send what you have.
+- Dates are `YYYY-MM-DD`. Up to **~5,000 op lines per request** (with their parts);
+  split a larger backfill into multiple requests.
+
+### What we intentionally don't need (keep it lean)
+
+VIN, make, model, year, mileage, customer #, advisor, tech name/#, service name,
+complaint/cause, all contract / misc / discount / claim / insurance fields,
+extended cost/sale. Don't send them.
 
 ---
 
@@ -81,24 +100,17 @@ de-duplicate for matching and keep the raw lines).
 ```jsonc
 {
   "ok": true,
-  "batchId": "c27527e4-…",   // our id for this batch
-  "received": 1000,          // raw lines stored
-  "distinctSkus": 240,       // unique SKUs after de-dup
-  "newParts": 7              // SKUs not yet set up — what our team will review
+  "batchId": "c27527e4-…",
+  "opLines": 320,        // op lines received
+  "parts": 1180,         // parts received
+  "newParts": 7          // parts not yet set up — what our team reviews
+  // (a newOpCodes count is added when the op-code identifier ships)
 }
 ```
 A repeat with the same `Idempotency-Key` returns the same body plus `"idempotent": true`.
 
-**Errors**
-
-| Status | Meaning |
-|--------|---------|
-| `401` | Missing/invalid `Authorization` key |
-| `400` | Validation error (body tells you which field) — e.g. `{"error":"every line needs a dealerSku."}` |
-| `500` | Server error — safe to retry with the same `Idempotency-Key` |
-
-You don't need to act on `newParts` — it's just a confirmation. We handle review
-and notify onboarding.
+**Errors:** `401` bad key · `400` validation (body names the field) · `500`
+server error (safe to retry with the same `Idempotency-Key`).
 
 ---
 
@@ -107,109 +119,65 @@ and notify onboarding.
 ```bash
 curl -X POST https://parts.ez-wins.com/api/v1/sales \
   -H "Authorization: Bearer <API_KEY>" \
-  -H "Idempotency-Key: STORE-1234-2026-06-16" \
+  -H "Idempotency-Key: STORE-1234-2026-05-16" \
   -H "Content-Type: application/json" \
   -d '{
-    "store":  { "id": "STORE-1234", "name": "Modesto Toyota", "dmsType": "R&R" },
-    "period": { "start": "2026-06-16", "end": "2026-06-22" },
-    "lines": [
-      { "dealerSku": "FA2031", "skuDescription": "ELEMENT ASY - AIR CLE",
-        "opDescription": "BRAKE FLUSH SERVICE", "vehicleMake": "TOYOTA",
-        "quantitySold": 1, "saleDate": "2026-06-18" }
+    "store":  { "id": "STORE-1234", "name": "Toyota of Gallatin" },
+    "period": { "start": "2026-05-16", "end": "2026-06-16" },
+    "opLines": [
+      { "ro": "50863", "line": "1", "opCode": "10KSYN",
+        "opDescription": "12 Months/10,000 Mile Service", "payType": "WM",
+        "laborSale": 66.53, "techHours": 0.50, "saleDate": "2026-05-18",
+        "parts": [ { "dealerSku": "04152-YZZA1", "partName": "OIL FILTER", "qty": 1, "sale": 9.50, "cost": 6.20 } ] }
     ]
   }'
-```
-
-Node (fetch):
-```js
-await fetch("https://parts.ez-wins.com/api/v1/sales", {
-  method: "POST",
-  headers: {
-    "Authorization": `Bearer ${process.env.MOC_API_KEY}`,
-    "Idempotency-Key": `${store.id}-${weekStart}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({ store, period, lines }),
-});
 ```
 
 ---
 
 ## Testing (no data created)
 
-Two zero-side-effect ways to verify your integration before sending real data:
-
-**1. Health + auth + schema** — `GET /api/v1/health` (no body):
-```bash
-curl https://parts.ez-wins.com/api/v1/health -H "Authorization: Bearer <API_KEY>"
-```
-Returns `200` with the contract and `"auth": "ok"` (or `"invalid"` / `"none"`), so
-you can confirm reachability, your key, and the exact field list.
-
-**2. Dry-run a real payload** — add `?dryRun=1` to the live endpoint:
-```bash
-curl -X POST "https://parts.ez-wins.com/api/v1/sales?dryRun=1" \
-  -H "Authorization: Bearer <API_KEY>" -H "Content-Type: application/json" \
-  -d '{ "store": { "id": "STORE-1234" }, "period": { "start": "2026-06-16", "end": "2026-06-22" },
-        "lines": [ { "dealerSku": "FA2031" } ] }'
-```
-Validates auth + payload shape and returns `{ "ok": true, "dryRun": true, "received": 1, "distinctSkus": 1 }`
-— **nothing is stored, matched, or sent to onboarding.** A bad payload returns the
-same `400` with the field error you'd get live. Drop `?dryRun=1` to go live.
+- **Health / auth / schema:** `GET /api/v1/health` with your `Authorization` header
+  returns `200`, the contract, and `"auth": "ok"` — confirm reachability + your key
+  + the field list. (It will report `version: v2`.)
+- **Dry-run a real payload:** `POST /api/v1/sales?dryRun=1` validates auth + shape
+  and returns the counts (`opLines`, `parts`) with **nothing stored, matched, or
+  notified**. A bad payload returns the same `400` you'd get live. Drop `?dryRun=1`
+  to go live.
 
 ---
 
 ## When to send (two triggers)
 
-Same endpoint, same payload — just fired at two moments:
+1. **First sync (onboarding).** Once, when a store's initial data sync finishes —
+   establishes its baseline. Add `"initial": true` at the top level so the
+   onboarding ticket reads "Initial setup".
+2. **Weekly thereafter.** Each week's service data; we surface only the new parts
+   (and, once it ships, new op codes).
 
-1. **First sync (onboarding).** Once, when a store's initial data sync finishes,
-   send its current parts sales. This establishes the store's baseline so the
-   onboarding team can set everything up. (Optionally mark it — see `initial`
-   below.)
-2. **Weekly thereafter.** Each week, send that week's parts sales. We diff against
-   what's already set up and only surface the genuinely new parts.
+For a large first sync, **dedup parts to distinct SKUs** and split into multiple
+requests to stay under the per-request cap and the ~60s response window.
 
-Both are the same `POST /api/v1/sales`. You don't track which is which on your end
-beyond choosing when to call it.
-
-### First-sync notes
-- The **5,000-line cap is per request.** A large onboarding backfill should be
-  **de-duplicated to distinct SKUs** before sending (you don't need every
-  historical sale for setup — one line per SKU is enough), or split into multiple
-  requests for the same store.
-- If you can include `knownSkus` (SKUs already set up for that store), the first
-  sync surfaces only the *gap*. If you omit it, the first sync surfaces *all*
-  parts for a full onboarding review — both are valid; tell us which you want.
+---
 
 ## What you need to build (the whole job)
 
-1. A per-store job that selects parts sales — **weekly**, plus a **one-time run
-   when a store's first data sync completes**.
-2. Map each row to a `line` (`dealerSku` + whatever else you have).
-3. POST one request per store with an `Idempotency-Key`; on a non-2xx, retry with
+1. A per-store job — **weekly**, plus a **one-time first-sync** — that selects the
+   period's op lines and their parts and nests them (group parts under their op
+   line by `RO + line`).
+2. POST one request per store with an `Idempotency-Key`; on a non-2xx, retry with
    the **same** key.
 
-That's it — no schema for us to design on your side, no callbacks to handle, no
-state to keep. One key, one POST per store per send.
+The only field that's "new" vs your current exports: the **operations line number
+on the parts** (your op-line export already has it; the parts/uplift export needs
+it added) so parts attach to the right op line and labor isn't double-counted.
 
 ---
 
 ## Notes
 
-- HTTPS only; the API key is the only credential. Rotated rarely (a couple times
-  a year) — we'll hand you the new one ahead of time.
-- Cadence is whatever you choose (weekly is the plan); we don't schedule anything.
-- `knownSkus` is optional today. As Easy Wins becomes the system of record for
-  what's "set up," sending it sharpens which parts we flag — we'll confirm timing.
-
-### Request size, timing & concurrency
-
-- The response can take a few seconds when there are **new parts** — we run AI
-  matching over them inside the request. Use a **client timeout of ~60s**.
-- Keep each request to roughly **a few hundred *new* parts**. A normal weekly run
-  has only a handful, so this matters mainly for a **large first sync** — split a
-  big onboarding backfill into several requests (per the dedup guidance above)
-  rather than one giant one.
-- For the weekly run across many stores, **stagger the sends** (a steady stream,
-  not all stores at the same instant).
+- HTTPS only; the API key is the only credential. Rotated rarely.
+- Cadence is yours; we don't schedule anything. Stagger the weekly send across
+  stores rather than firing all at once; use a client timeout of ~60s.
+- `payType` (CWI) is optional but useful — it tells a customer-pay menu service
+  from a warranty/recall/internal line.
