@@ -8,3 +8,7 @@ dist/
 .env.local
 eval/report.md
 next-env.d.ts
+
+# Real dealer exports — contain VINs / customer PII, never commit
+*_raw_data_*.csv
+*_warranty_uplift_*.xlsx
