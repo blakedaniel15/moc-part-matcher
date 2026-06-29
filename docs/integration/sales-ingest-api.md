@@ -46,7 +46,7 @@ line; each carries its **own** parts.
 
 ```jsonc
 {
-  "store":  { "id": "STORE-1234", "name": "Toyota of Gallatin" }, // id REQUIRED; name optional
+  "store":  { "id": "STORE-1234", "name": "Toyota of Gallatin" }, // both REQUIRED — id = stable dealer key (same every week); name = display name
   "period": { "start": "2026-05-16", "end": "2026-06-16" },       // REQUIRED, ISO YYYY-MM-DD
 
   "opLines": [                          // REQUIRED — non-empty
@@ -77,8 +77,12 @@ line; each carries its **own** parts.
 
 ### Field rules
 
-- **Required:** `store.id`, `period.start`, `period.end`, and for every op line
-  `ro` + `line` + `opCode`. Each part needs a `dealerSku`.
+- **Required:** `store.id`, `store.name`, `period.start`, `period.end`, and for every
+  op line `ro` + `line` + `opCode`. Each part needs a `dealerSku`.
+- **`store.id` is the dealer key** for everything downstream (learned mappings, run
+  history, stats) — send the **same stable id for a store on every request**. If it
+  ever changes, that store reads as a brand-new dealer. **`store.name`** is the human
+  display name shown in our tools — send it (we fall back to the id only if it's missing).
 - `opDescription` and `partName` are the matching signals — **send them whenever
   available.**
 - An op line with no parts is fine (`"parts": []` or omitted).

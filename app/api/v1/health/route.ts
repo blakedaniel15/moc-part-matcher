@@ -11,9 +11,8 @@ const CONTRACT = {
   version: "v2",
   endpoint: "POST /api/v1/sales",
   shape: "nested: opLines[] each with its own parts[]",
-  required: ["store.id", "period.start", "period.end", "opLines[].ro", "opLines[].line", "opLines[].opCode", "opLines[].parts[].dealerSku"],
+  required: ["store.id", "store.name", "period.start", "period.end", "opLines[].ro", "opLines[].line", "opLines[].opCode", "opLines[].parts[].dealerSku"],
   optional: [
-    "store.name",
     "store.dmsType",
     "knownSkus",
     "initial",
