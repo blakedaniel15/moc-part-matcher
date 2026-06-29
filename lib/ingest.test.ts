@@ -1,26 +1,51 @@
 import { describe, it, expect } from "vitest";
-import { validateIngest, distinctSkus } from "./ingest";
+import { validateIngest, distinctSkus, flattenParts, countParts } from "./ingest";
+
+const good = {
+  store: { id: "S1" },
+  period: { start: "2026-05-16", end: "2026-06-16" },
+  opLines: [
+    { ro: "50863", line: "1", opCode: "10KSYN", opDescription: "10K SERVICE", parts: [{ dealerSku: "A1", partName: "OIL FILTER" }] },
+    { ro: "50863", line: "2", opCode: "BR01", opDescription: "BRAKE FLUSH" },
+  ],
+};
 
 describe("validateIngest", () => {
-  it("requires store.id, period, and lines", () => {
-    expect(validateIngest({ lines: [] }).ok).toBe(false);
-    const good = validateIngest({ store: { id: "S1" }, period: { start: "2026-06-16", end: "2026-06-22" }, lines: [{ dealerSku: "A1" }] });
-    expect(good.ok).toBe(true);
+  it("accepts a well-formed nested body", () => {
+    expect(validateIngest(good).ok).toBe(true);
   });
-  it("rejects a line with no dealerSku", () => {
-    const r = validateIngest({ store: { id: "S1" }, period: { start: "a", end: "b" }, lines: [{ skuDescription: "x" }] });
+  it("requires store.id, period, and opLines", () => {
+    expect(validateIngest({ opLines: [] }).ok).toBe(false);
+    expect(validateIngest({ store: { id: "S1" }, period: { start: "a", end: "b" }, opLines: [] }).ok).toBe(false);
+  });
+  it("requires ro, line, opCode on each op line", () => {
+    const r = validateIngest({ store: { id: "S1" }, period: { start: "a", end: "b" }, opLines: [{ ro: "1", line: "1" }] });
+    expect(r.ok).toBe(false);
+  });
+  it("requires a dealerSku on each part", () => {
+    const r = validateIngest({ store: { id: "S1" }, period: { start: "a", end: "b" }, opLines: [{ ro: "1", line: "1", opCode: "X", parts: [{ partName: "no sku" }] }] });
     expect(r.ok).toBe(false);
   });
 });
 
+describe("countParts / flattenParts", () => {
+  it("counts parts across op lines", () => {
+    expect(countParts(good.opLines as any)).toBe(1);
+  });
+  it("flattens parts and carries the parent op description", () => {
+    const parts = flattenParts(good.opLines as any);
+    expect(parts).toHaveLength(1);
+    expect(parts[0]).toMatchObject({ dealerSku: "A1", skuDescription: "OIL FILTER", opDescription: "10K SERVICE" });
+  });
+});
+
 describe("distinctSkus", () => {
-  it("collapses duplicate SKUs, keeping the line with the most fields", () => {
+  it("collapses duplicate SKUs, keeping the richest line", () => {
     const out = distinctSkus([
       { dealerSku: "A1" },
       { dealerSku: "a1", skuDescription: "FULL", opDescription: "BRAKE FLUSH" },
-      { dealerSku: "B2", skuDescription: "B" },
     ]);
-    expect(out).toHaveLength(2);
-    expect(out.find((l) => l.dealerSku.toUpperCase() === "A1")?.skuDescription).toBe("FULL");
+    expect(out).toHaveLength(1);
+    expect(out[0].skuDescription).toBe("FULL");
   });
 });

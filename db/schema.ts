@@ -133,4 +133,37 @@ export async function runMigration(sql: Sql): Promise<void> {
     updated_at timestamptz not null default now(),
     primary key (dealer_key, sku)
   )`;
+  // v2 ingest: two grains. Op lines (op-code grain) + parts (part grain), keyed by
+  // store|ro|line so labor/hours are stored once and parts attach to their op line.
+  await sql`alter table ingest_batches add column if not exists op_lines integer not null default 0`;
+  await sql`create table if not exists service_lines (
+    op_line_id text primary key,
+    store_id text not null,
+    ro text not null,
+    line text not null,
+    op_code text not null,
+    op_description text null,
+    correction text null,
+    pay_type text null,
+    labor_sale numeric null,
+    tech_hours numeric null,
+    sale_date date null,
+    batch_id text null,
+    ingested_at timestamptz not null default now()
+  )`;
+  await sql`create index if not exists service_lines_store_op on service_lines (store_id, op_code)`;
+  await sql`create table if not exists service_parts (
+    id bigserial primary key,
+    op_line_id text not null,
+    store_id text not null,
+    dealer_sku text not null,
+    part_name text null,
+    qty numeric null,
+    sale numeric null,
+    cost numeric null,
+    batch_id text null,
+    ingested_at timestamptz not null default now()
+  )`;
+  await sql`create index if not exists service_parts_store_sku on service_parts (store_id, dealer_sku)`;
+  await sql`create index if not exists service_parts_opline on service_parts (op_line_id)`;
 }

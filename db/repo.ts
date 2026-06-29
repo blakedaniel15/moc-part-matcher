@@ -173,22 +173,40 @@ export async function upsertKnownSkus(sql: SqlExec, dealerKey: string, skus: str
 }
 
 export async function getBatchByIdempotency(sql: SqlExec, key: string): Promise<any | null> {
-  const rows = await sql`select batch_id, distinct_skus, new_parts, line_count from ingest_batches where idempotency_key = ${key}`;
+  const rows = await sql`select batch_id, op_lines, line_count, distinct_skus, new_parts from ingest_batches where idempotency_key = ${key}`;
   return rows[0] ?? null;
 }
 
 export async function insertBatch(
   sql: SqlExec,
-  b: { batchId: string; idempotencyKey: string; storeId: string; periodStart: string; periodEnd: string; lineCount: number; distinctSkus: number; newParts: number }
+  b: { batchId: string; idempotencyKey: string; storeId: string; periodStart: string; periodEnd: string; opLines: number; lineCount: number; distinctSkus: number; newParts: number }
 ): Promise<void> {
-  await sql`insert into ingest_batches (batch_id, idempotency_key, store_id, period_start, period_end, line_count, distinct_skus, new_parts)
-    values (${b.batchId}, ${b.idempotencyKey}, ${b.storeId}, ${b.periodStart}, ${b.periodEnd}, ${b.lineCount}, ${b.distinctSkus}, ${b.newParts})`;
+  await sql`insert into ingest_batches (batch_id, idempotency_key, store_id, period_start, period_end, op_lines, line_count, distinct_skus, new_parts)
+    values (${b.batchId}, ${b.idempotencyKey}, ${b.storeId}, ${b.periodStart}, ${b.periodEnd}, ${b.opLines}, ${b.lineCount}, ${b.distinctSkus}, ${b.newParts})`;
 }
 
-export async function insertSalesLines(sql: SqlExec, batchId: string, storeId: string, lines: any[]): Promise<void> {
-  for (const l of lines) {
-    await sql`insert into sales_lines (batch_id, store_id, dealer_sku, sku_description, op_code, op_description, vehicle_make, quantity_sold, sale_date, cost, sale)
-      values (${batchId}, ${storeId}, ${l.dealerSku}, ${l.skuDescription ?? null}, ${l.opCode ?? null}, ${l.opDescription ?? null}, ${l.vehicleMake ?? null}, ${l.quantitySold ?? null}, ${l.saleDate ?? null}, ${l.cost ?? null}, ${l.sale ?? null})`;
+// v2: store both grains. Op lines upserted by op_line_id (store|ro|line, so labor
+// is stored once); parts inserted beneath their op line.
+export async function insertServiceData(
+  sql: SqlExec,
+  batchId: string,
+  storeId: string,
+  opLines: {
+    ro: string; line: string; opCode: string; opDescription?: string; correction?: string; payType?: string;
+    laborSale?: number; techHours?: number; saleDate?: string;
+    parts?: { dealerSku: string; partName?: string; qty?: number; sale?: number; cost?: number }[];
+  }[]
+): Promise<void> {
+  for (const ol of opLines) {
+    const opLineId = `${storeId}|${ol.ro}|${ol.line}`;
+    await sql`insert into service_lines (op_line_id, store_id, ro, line, op_code, op_description, correction, pay_type, labor_sale, tech_hours, sale_date, batch_id)
+      values (${opLineId}, ${storeId}, ${ol.ro}, ${ol.line}, ${ol.opCode}, ${ol.opDescription ?? null}, ${ol.correction ?? null}, ${ol.payType ?? null}, ${ol.laborSale ?? null}, ${ol.techHours ?? null}, ${ol.saleDate ?? null}, ${batchId})
+      on conflict (op_line_id) do update set op_code = excluded.op_code, op_description = excluded.op_description, correction = excluded.correction,
+        pay_type = excluded.pay_type, labor_sale = excluded.labor_sale, tech_hours = excluded.tech_hours, sale_date = excluded.sale_date, batch_id = excluded.batch_id`;
+    for (const p of ol.parts ?? []) {
+      await sql`insert into service_parts (op_line_id, store_id, dealer_sku, part_name, qty, sale, cost, batch_id)
+        values (${opLineId}, ${storeId}, ${p.dealerSku}, ${p.partName ?? null}, ${p.qty ?? null}, ${p.sale ?? null}, ${p.cost ?? null}, ${batchId})`;
+    }
   }
 }
 

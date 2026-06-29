@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkBearer } from "../../../../lib/api-auth";
-import { validateIngest, distinctSkus } from "../../../../lib/ingest";
+import { validateIngest, distinctSkus, flattenParts, countParts } from "../../../../lib/ingest";
 import { partsFromLines } from "../../../../lib/ingest-parts";
 import { computeGap } from "../../../../lib/gap";
 import { normalizeDealerKey } from "../../../../lib/dealer";
@@ -12,7 +12,7 @@ import type { MatchResult } from "../../../../engine/types";
 import { db } from "../../../../db/client";
 import {
   loadCatalog, loadApproved, loadBlockedSkus, upsertDealer, loadKnownSkus, upsertKnownSkus,
-  getBatchByIdempotency, insertBatch, insertSalesLines, saveRunSnapshot,
+  getBatchByIdempotency, insertBatch, insertServiceData, saveRunSnapshot,
 } from "../../../../db/repo";
 import { config, requireEnv } from "../../../../lib/config";
 
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     // zero side effects. Trigger with ?dryRun=1 or a top-level "dryRun": true.
     const dryRun = new URL(req.url).searchParams.get("dryRun") === "1" || raw?.dryRun === true;
     if (dryRun) {
-      return NextResponse.json({ ok: true, dryRun: true, received: body.lines.length, distinctSkus: distinctSkus(body.lines).length });
+      return NextResponse.json({ ok: true, dryRun: true, opLines: body.opLines.length, parts: countParts(body.opLines) });
     }
 
     const sql: any = db();
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     if (idempotencyKey) {
       const prior = await getBatchByIdempotency(sql, idempotencyKey);
       if (prior) {
-        return NextResponse.json({ ok: true, batchId: prior.batch_id, received: prior.line_count, distinctSkus: prior.distinct_skus, newParts: prior.new_parts, idempotent: true });
+        return NextResponse.json({ ok: true, batchId: prior.batch_id, opLines: prior.op_lines, parts: prior.line_count, newParts: prior.new_parts, idempotent: true });
       }
     }
 
@@ -51,14 +51,15 @@ export async function POST(req: Request) {
     const dealerKey = normalizeDealerKey(dealerName);
     await upsertDealer(sql, { key: dealerKey, name: dealerName, dmsType: body.store.dmsType ?? null });
 
-    // Store the raw firehose under a new batch id.
+    // Store both grains (op lines + parts) under a new batch id.
     const batchId = (globalThis.crypto?.randomUUID?.() ?? `batch-${dealerKey}-${body.period.start}`) as string;
-    await insertSalesLines(sql, batchId, body.store.id, body.lines);
+    await insertServiceData(sql, batchId, body.store.id, body.opLines);
 
-    // Known set: fold in any delivered knownSkus, then diff against the persistent set.
+    // Parts side: flatten parts (with their op description), then diff against the
+    // dealer's known set. Op-code classification reads service_lines separately.
     if (body.knownSkus?.length) await upsertKnownSkus(sql, dealerKey, body.knownSkus, "easywins");
     const known = await loadKnownSkus(sql, dealerKey);
-    const distinct = distinctSkus(body.lines);
+    const distinct = distinctSkus(flattenParts(body.opLines));
     const { gap } = computeGap(partsFromLines(distinct), known);
 
     // Match only the gap (the new parts).
@@ -121,7 +122,7 @@ export async function POST(req: Request) {
     await insertBatch(sql, {
       batchId, idempotencyKey: idempotencyKey || batchId, storeId: body.store.id,
       periodStart: body.period.start, periodEnd: body.period.end,
-      lineCount: body.lines.length, distinctSkus: distinct.length, newParts: gap.length,
+      opLines: body.opLines.length, lineCount: countParts(body.opLines), distinctSkus: distinct.length, newParts: gap.length,
     });
 
     // ClickUp — best-effort; a failure must never fail the ingest.
@@ -134,7 +135,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ ok: true, batchId, received: body.lines.length, distinctSkus: distinct.length, newParts: gap.length });
+    return NextResponse.json({ ok: true, batchId, opLines: body.opLines.length, parts: countParts(body.opLines), newParts: gap.length });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Ingest failed." }, { status: 500 });
   }

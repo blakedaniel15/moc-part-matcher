@@ -15,7 +15,6 @@ export function partsFromLines(lines: SaleLine[]): Part[] {
       dmsType: dms,
       structural: analyzeStructure(parsed.barePartNumber),
       opDescription: l.opDescription || undefined,
-      vehicleMake: l.vehicleMake || undefined,
     };
   });
 }
