@@ -1,3 +1,5 @@
+import { cosine } from "./embedder";
+
 // Discriminative retrieval over "the well" — the retained embeddings of every
 // confirmed variation, keyed by product (bare#). Two roles:
 //   decideRetrieval  — a standalone positive matcher (confident fit -> match).
@@ -9,6 +11,25 @@
 export interface Neighbor {
   barePartNumber: string; // which product this well-member belongs to
   similarity: number; // cosine similarity to the candidate, in [-1, 1]
+}
+
+// A retained well-member: a confirmed variation's embedding, labelled by product.
+export interface WellMember {
+  barePartNumber: string;
+  embedding: number[];
+}
+
+// Injected into the pipeline. Embeds candidates and scores them against the well.
+// Optional — when absent, the pipeline behaves exactly as before.
+export interface Retriever {
+  config: RetrievalConfig;
+  score(skusAndNames: { sku: string; partName: string }[]): Promise<Map<string, Neighbor[]>>;
+}
+
+// Score a candidate embedding against every well-member -> neighbors. (v1 exact
+// scoring in-process; swaps to a pgvector ANN query at scale — same Neighbor shape.)
+export function neighborsFor(candidate: number[], well: WellMember[]): Neighbor[] {
+  return well.map((m) => ({ barePartNumber: m.barePartNumber, similarity: cosine(candidate, m.embedding) }));
 }
 
 export interface RetrievalConfig {

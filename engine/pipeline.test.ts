@@ -1,6 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { runPipeline } from "./pipeline";
 import { RecordedAdjudicator } from "./adjudicator";
+import { RecordedEmbedder } from "./embedder";
+import { WellRetriever } from "./retriever";
 import type { Part, Archetype, StructuralLabel } from "./types";
 
 const catalog: Archetype[] = [
@@ -49,6 +51,19 @@ describe("runPipeline", () => {
     });
     const [r] = await runPipeline([mk("CUSTOM9", "CUSTOM9", "SHYFT ATF")], ctx(adj));
     expect(r).toMatchObject({ matchType: "AI", confidence: "MEDIUM", matchedPartNumber: "04461" });
+  });
+
+  it("retrieval fast-paths a confident semantic match, skipping the AI", async () => {
+    // Candidate embeds identical to a confirmed 04461 well-member -> retrieval match,
+    // and the AI is never consulted (it would have said no).
+    const embedder = new RecordedEmbedder({ "SHYFT TRANSMISSION ADDITIVE": [1, 0, 0] });
+    const well = [{ barePartNumber: "04461", embedding: [1, 0, 0] }];
+    const retriever = new WellRetriever({ embedder, well, config: { floor: 0.6, strong: 0.8, margin: 0.1 } });
+    const adj = new RecordedAdjudicator({}); // no verdicts -> would be UNMATCHED without retrieval
+    const adjSpy = vi.spyOn(adj, "adjudicate");
+    const [r] = await runPipeline([mk("NOVEL1", "NOVEL1", "SHYFT TRANSMISSION ADDITIVE")], { ...ctx(adj), retriever });
+    expect(r).toMatchObject({ matchType: "AI", matchedPartNumber: "04461", confidence: "HIGH" });
+    expect(adjSpy).not.toHaveBeenCalled(); // fast-pathed before the AI
   });
 
   it("AI-uncertain unmatched (chemical) => review; confident/mechanical unmatched clears its confidence", async () => {

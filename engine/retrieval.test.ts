@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { decideRetrieval, validateAgainst, rankProducts, type Neighbor, type RetrievalConfig } from "./retrieval";
+import { decideRetrieval, validateAgainst, rankProducts, neighborsFor, type Neighbor, type RetrievalConfig } from "./retrieval";
 import { cosine, memberText } from "./embedder";
 
 const cfg: RetrievalConfig = { floor: 0.6, strong: 0.8, margin: 0.1 };
@@ -52,6 +52,18 @@ describe("validateAgainst (discriminative veto)", () => {
   it("unknown: no confirmed members for the product => don't veto (novel)", () => {
     const n: Neighbor[] = [{ barePartNumber: "99999", similarity: 0.9 }];
     expect(validateAgainst(n, "01211", cfg)).toBe("unknown");
+  });
+});
+
+describe("neighborsFor", () => {
+  it("scores a candidate against every well member by cosine", () => {
+    const well = [
+      { barePartNumber: "A", embedding: [1, 0, 0] },
+      { barePartNumber: "B", embedding: [0, 1, 0] },
+    ];
+    const n = neighborsFor([1, 0, 0], well);
+    expect(n.find((x) => x.barePartNumber === "A")!.similarity).toBeCloseTo(1);
+    expect(n.find((x) => x.barePartNumber === "B")!.similarity).toBeCloseTo(0);
   });
 });
 

@@ -168,4 +168,19 @@ export async function runMigration(sql: Sql): Promise<void> {
   )`;
   await sql`create index if not exists service_parts_store_sku on service_parts (store_id, dealer_sku)`;
   await sql`create index if not exists service_parts_opline on service_parts (op_line_id)`;
+  // "The well": every confirmed variation, embedded, keyed by product (bare#). Stored
+  // as real[] (model-agnostic, no dimension lock) with in-process cosine for v1;
+  // migrates to pgvector + HNSW when the corpus warrants. Kept SEPARATE from the
+  // op-code tool's well by design.
+  await sql`create table if not exists assignment_vectors (
+    id bigserial primary key,
+    bare_part_number text not null,
+    text text not null,
+    embedding real[] not null,
+    dealer text null,
+    origin text not null default 'approved',
+    created_at timestamptz not null default now(),
+    unique (bare_part_number, text)
+  )`;
+  await sql`create index if not exists assignment_vectors_bpn on assignment_vectors (bare_part_number)`;
 }

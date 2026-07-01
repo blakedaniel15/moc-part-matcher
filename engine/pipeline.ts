@@ -4,6 +4,7 @@ import { fuzzyMatch } from "./fuzzy";
 import { prefilterSkip } from "./prefilter";
 import { isMechanicalName } from "./heuristics";
 import type { Adjudicator } from "./adjudicator";
+import { decideRetrieval, type Retriever } from "./retrieval";
 
 export interface PipelineContext {
   catalog: Archetype[];
@@ -12,6 +13,7 @@ export interface PipelineContext {
   dealerRejections: string[]; // SKUs already NO'd for THIS dealer
   dealerBrand: "toyota" | "all";
   adjudicator: Adjudicator;
+  retriever?: Retriever; // optional semantic layer over "the well"; absent => unchanged behavior
 }
 
 const stripPrefix = (sku: string) => sku.toUpperCase().replace(/^[A-Z]+(?=\d)/, "");
@@ -128,11 +130,37 @@ export async function runPipeline(parts: Part[], ctx: PipelineContext): Promise<
     toAI.push(part);
   }
 
-  // PASS 4 — AI adjudication.
-  if (toAI.length) {
-    const verdicts = await adjudicator.adjudicate(toAI);
-    const bySku = new Map(verdicts.map((v) => [v.sku, v]));
+  // PASS 3.5 — retrieval (optional): a confident semantic match to "the well"
+  // fast-paths out of the AI call; everything else falls through to the AI.
+  let aiParts = toAI;
+  if (toAI.length && ctx.retriever) {
+    const scores = await ctx.retriever.score(toAI.map((p) => ({ sku: p.sku, partName: p.partName })));
+    const remaining: Part[] = [];
     for (const part of toAI) {
+      const v = decideRetrieval(scores.get(part.sku) ?? [], ctx.retriever.config);
+      if (v.decision === "match") {
+        const arch = findArchetype(catalog, v.barePartNumber);
+        results.push({
+          ...part,
+          matchType: "AI",
+          matchedArchetype: arch ? arch.manufacturerPart : null,
+          matchedPartNumber: arch ? arch.barePartNumber : null,
+          confidence: v.confidence,
+          reason: `Semantic match to confirmed ${v.barePartNumber} variations (similarity ${v.score.toFixed(2)})`,
+          incentive: arch ? arch.incentive : null,
+        } as MatchResult);
+      } else {
+        remaining.push(part);
+      }
+    }
+    aiParts = remaining;
+  }
+
+  // PASS 4 — AI adjudication (on whatever retrieval didn't confidently resolve).
+  if (aiParts.length) {
+    const verdicts = await adjudicator.adjudicate(aiParts);
+    const bySku = new Map(verdicts.map((v) => [v.sku, v]));
+    for (const part of aiParts) {
       const v = bySku.get(part.sku);
       const mapping = v && v.matched && v.mocPartNumber != null ? findArchetype(catalog, v.mocPartNumber) : null;
       results.push({

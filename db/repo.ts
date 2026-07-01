@@ -211,6 +211,35 @@ export async function insertServiceData(
   }
 }
 
+// ---- The well (retrieval vectors) -----------------------------------------
+
+export async function insertAssignmentVector(
+  sql: SqlExec,
+  m: { barePartNumber: string; text: string; embedding: number[]; dealer?: string | null; origin?: string }
+): Promise<void> {
+  await sql`insert into assignment_vectors (bare_part_number, text, embedding, dealer, origin)
+    values (${m.barePartNumber}, ${m.text}, ${m.embedding as any}, ${m.dealer ?? null}, ${m.origin ?? "approved"})
+    on conflict (bare_part_number, text) do nothing`;
+}
+
+// Load the well for in-process scoring (v1). At scale this becomes a pgvector
+// ANN query returning the same shape.
+export async function loadWell(sql: SqlExec): Promise<{ barePartNumber: string; embedding: number[] }[]> {
+  const rows = await sql`select bare_part_number, embedding from assignment_vectors`;
+  return rows.map((r) => ({ barePartNumber: r.bare_part_number, embedding: (r.embedding as number[]) ?? [] }));
+}
+
+export async function countWell(sql: SqlExec): Promise<number> {
+  const rows = await sql`select count(*)::int as n from assignment_vectors`;
+  return rows[0]?.n ?? 0;
+}
+
+// SKUs already embedded, so a backfill can skip them (text is the dedup key).
+export async function loadWellTexts(sql: SqlExec): Promise<Set<string>> {
+  const rows = await sql`select bare_part_number, text from assignment_vectors`;
+  return new Set(rows.map((r) => `${r.bare_part_number}|${r.text}`));
+}
+
 // Add a new MOC product to the catalog (source 'custom' so it's distinguishable
 // from the official import).
 export async function upsertArchetype(
