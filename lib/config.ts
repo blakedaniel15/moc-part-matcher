@@ -1,5 +1,5 @@
 export const config = {
-  anthropicModel: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
+  anthropicModel: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
   batchSize: 30,
 };
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkBearer } from "../../../../lib/api-auth";
+import { config } from "../../../../lib/config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,5 +37,5 @@ export async function GET(req: Request) {
   const expected = process.env.INGEST_API_KEY || "";
   // "none" = no key sent · "ok" = valid · "invalid" = wrong key.
   const auth = !header ? "none" : checkBearer(header, expected) ? "ok" : "invalid";
-  return NextResponse.json({ ok: true, auth, ...CONTRACT });
+  return NextResponse.json({ ok: true, auth, model: config.anthropicModel, ...CONTRACT });
 }
