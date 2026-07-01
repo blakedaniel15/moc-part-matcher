@@ -102,11 +102,22 @@ and discriminative, that improvement is in **accuracy**, not just volume.
   and the confirm behavior (true members must match), so calibration is measurable
   and regression-guarded in CI.
 
-## Op-code tool reuse
+## Op-code tool — same pattern, SEPARATE well
 
-Identical shape for the op-code identifier: a well per **menu item** (confirmed
-`opCode`/`opDescription` variations), same retrieval + discriminative decision. The
-matcher is written to be domain-agnostic (product/menu-item is just the label).
+The op-code identifier is building its own brain/RAG. We **keep the two vector
+stores separate** — they're different embedding spaces (part→product vs
+op-code→menu-item), and mixing them would blur the very distinctions we're
+sharpening. So:
+
+- **Reuse the *pattern*, not the *data*.** The op-code tool follows this same
+  keep-the-well / tight-retrieval / discriminative-decision design, but on **its
+  own store**, keyed by `menu_item_id`.
+- **No cross-querying, no merged corpus.** This matcher only ever reads the parts
+  well; the op-code matcher only ever reads the op-code well.
+- **Naming stays namespaced** so they never collide even if co-located in the shared
+  Neon DB: parts uses `assignment_vectors`; the op-code tool uses
+  `opcode_assignment_vectors` (or its own DB entirely — its choice). Either is fine;
+  the hard rule is the two wells are distinct.
 
 ## Risks & guards
 
