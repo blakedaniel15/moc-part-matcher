@@ -36,6 +36,17 @@ describe("fuzzyMatch", () => {
   it("mid-letter OEM number => no fuzzy match", () => {
     expect(fuzzyMatch(part("76620-T20-A01", "76620-T20-A01"), catalog)).toBeNull();
   });
+
+  it("2d MOC brand number: M + bare + trailing size digit => HIGH", () => {
+    // M012110 -> 01211 (leading zero preserved, trailing 0 dropped).
+    const cat: Archetype[] = [{ barePartNumber: "01211", manufacturerPart: "01211 - MOTOR OIL CONDITIONER", incentive: 0 }];
+    const r = fuzzyMatch(part("M012110", "M012110", "ENGINE OIL CONDITIONER"), cat);
+    expect(r).toMatchObject({ matchPass: "2d", confidence: "HIGH" });
+    expect(r!.archetype.barePartNumber).toBe("01211");
+  });
+  it("2d only fires when the embedded 5 digits are a real archetype", () => {
+    expect(fuzzyMatch(part("M999990", "M999990", "MYSTERY GOO"), catalog)).toBeNull();
+  });
 });
 
 describe("fuzzyMatch 2b store-prefix guard", () => {

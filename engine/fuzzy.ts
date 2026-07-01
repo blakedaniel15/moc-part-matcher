@@ -20,14 +20,14 @@ function isStoreLikePrefix(prefix: string): boolean {
 export function fuzzyMatch(
   part: Part,
   catalog: Archetype[]
-): { archetype: Archetype; confidence: Confidence; reason: string; matchPass: "2a" | "2b" | "2c" } | null {
+): { archetype: Archetype; confidence: Confidence; reason: string; matchPass: "2a" | "2b" | "2c" | "2d" } | null {
   const digits = part.barePartNumber.replace(/[^0-9]/g, "");
   const core = numericCore(part.barePartNumber);
   const stripped = part.barePartNumber.replace(/-/g, "");
   const hasMidLetters = /\d[A-Z]+\d/i.test(stripped);
 
   let archetype: Archetype | null = null;
-  let matchPass: "2a" | "2b" | "2c" | null = null;
+  let matchPass: "2a" | "2b" | "2c" | "2d" | null = null;
   let reason = "";
 
   // 2a: numeric core — only valid if no letters embedded between digits.
@@ -37,6 +37,22 @@ export function fuzzyMatch(
       archetype = m;
       matchPass = "2a";
       reason = "Numeric core matches MOC " + m.barePartNumber + " after stripping formatting";
+    }
+  }
+  // 2d: MOC brand number — the dealer catalogued the MOC part by its own number:
+  // "M" + the 5-digit MOC bare number + an optional trailing size digit
+  // (e.g. M012110 -> 01211, M025310 -> 02531). The leading zero is part of the bare
+  // number (first 5 digits), which the numeric-core (strips leading zeros) and
+  // trailing-suffix (takes the LAST 5) passes both miss.
+  if (!archetype) {
+    const mocPrefix = part.sku.toUpperCase().trim().match(/^M(\d{5})\d*$/);
+    if (mocPrefix) {
+      const m = catalog.find((a) => a.barePartNumber === mocPrefix[1]);
+      if (m) {
+        archetype = m;
+        matchPass = "2d";
+        reason = "MOC catalog number " + mocPrefix[1] + " recognized from M-prefixed SKU " + part.sku;
+      }
     }
   }
   // 2b: trailing suffix — last 5 digits exactly match a MOC archetype, but ONLY when
@@ -82,6 +98,10 @@ export function fuzzyMatch(
   let confidence: Confidence;
   if (complexity === "suspect") {
     confidence = "LOW";
+  } else if (matchPass === "2d") {
+    // MOC's own catalog number — a strong, near-exact signal. HIGH unless the name
+    // reads mechanical (then MEDIUM, still matched + reviewed).
+    confidence = mechName ? "MEDIUM" : "HIGH";
   } else if (matchPass === "2b") {
     // Tail5 is inherently MEDIUM — MOC number is buried, more coincidence risk.
     confidence = mechName ? "LOW" : "MEDIUM";
