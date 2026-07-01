@@ -1,5 +1,5 @@
 import type { Part, Archetype, Confidence } from "./types";
-import { numericCore, skuComplexity, isMechanicalName } from "./heuristics";
+import { numericCore, skuComplexity, isMechanicalName, nameCorroboration } from "./heuristics";
 import { nameOverlap } from "./exact";
 
 // A "store-like" prefix is what dealers prepend before the full MOC number:
@@ -20,14 +20,14 @@ function isStoreLikePrefix(prefix: string): boolean {
 export function fuzzyMatch(
   part: Part,
   catalog: Archetype[]
-): { archetype: Archetype; confidence: Confidence; reason: string; matchPass: "2a" | "2b" | "2c" | "2d" } | null {
+): { archetype: Archetype; confidence: Confidence; reason: string; matchPass: "2a" | "2b" | "2c" | "2d" | "2e" } | null {
   const digits = part.barePartNumber.replace(/[^0-9]/g, "");
   const core = numericCore(part.barePartNumber);
   const stripped = part.barePartNumber.replace(/-/g, "");
   const hasMidLetters = /\d[A-Z]+\d/i.test(stripped);
 
   let archetype: Archetype | null = null;
-  let matchPass: "2a" | "2b" | "2c" | "2d" | null = null;
+  let matchPass: "2a" | "2b" | "2c" | "2d" | "2e" | null = null;
   let reason = "";
 
   // 2a: numeric core — only valid if no letters embedded between digits.
@@ -82,6 +82,26 @@ export function fuzzyMatch(
     }
   }
 
+  // 2e: MOC number embedded anywhere in the SKU, corroborated by the part name.
+  // Needs BOTH signals — a real 5-digit archetype as a substring AND a strong name
+  // overlap — which is what keeps a loose containment safe from coincidental hits.
+  if (!archetype && !hasMidLetters && digits.length >= 5) {
+    let best: { a: Archetype; score: number } | null = null;
+    for (const a of catalog) {
+      if (a.barePartNumber.length !== 5 || !digits.includes(a.barePartNumber)) continue;
+      const { shared, distinctive } = nameCorroboration(part.partName, a.manufacturerPart);
+      if (shared >= 2 || distinctive) {
+        const score = shared + (distinctive ? 1 : 0);
+        if (!best || score > best.score) best = { a, score };
+      }
+    }
+    if (best) {
+      archetype = best.a;
+      matchPass = "2e";
+      reason = "MOC number " + best.a.barePartNumber + " embedded in the SKU and corroborated by the part name";
+    }
+  }
+
   if (!archetype || !matchPass) return null;
 
   const complexity = skuComplexity(part.sku);
@@ -102,6 +122,10 @@ export function fuzzyMatch(
     // MOC's own catalog number — a strong, near-exact signal. HIGH unless the name
     // reads mechanical (then MEDIUM, still matched + reviewed).
     confidence = mechName ? "MEDIUM" : "HIGH";
+  } else if (matchPass === "2e") {
+    // Embedded number + corroborating name — a two-signal heuristic. MEDIUM (matched,
+    // always reviewed).
+    confidence = "MEDIUM";
   } else if (matchPass === "2b") {
     // Tail5 is inherently MEDIUM — MOC number is buried, more coincidence risk.
     confidence = mechName ? "LOW" : "MEDIUM";

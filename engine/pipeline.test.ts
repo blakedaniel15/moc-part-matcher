@@ -50,4 +50,16 @@ describe("runPipeline", () => {
     const [r] = await runPipeline([mk("CUSTOM9", "CUSTOM9", "SHYFT ATF")], ctx(adj));
     expect(r).toMatchObject({ matchType: "AI", confidence: "MEDIUM", matchedPartNumber: "04461" });
   });
+
+  it("AI-uncertain unmatched (chemical) => review; confident/mechanical unmatched clears its confidence", async () => {
+    const adj = new RecordedAdjudicator({
+      Z1: { sku: "Z1", matched: false, mocPartNumber: null, confidence: "MEDIUM", reason: "unsure" }, // hesitated
+      Z2: { sku: "Z2", matched: false, mocPartNumber: null, confidence: "HIGH", reason: "clearly not" }, // confident no
+    });
+    const res = await runPipeline([mk("Z1", "Z1", "FUEL SYSTEM TREATMENT"), mk("Z2", "Z2", "WIPER BLADE")], ctx(adj));
+    const z1 = res.find((r) => r.sku === "Z1")!;
+    const z2 = res.find((r) => r.sku === "Z2")!;
+    expect(z1).toMatchObject({ matchType: "AI", confidence: "LOW" }); // surfaced as a possible miss
+    expect(z2).toMatchObject({ matchType: "UNMATCHED", confidence: null }); // no misleading score
+  });
 });

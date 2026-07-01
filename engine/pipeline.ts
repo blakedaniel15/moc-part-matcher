@@ -147,22 +147,29 @@ export async function runPipeline(parts: Part[], ctx: PipelineContext): Promise<
     }
   }
 
-  // Reclassification: UNMATCHED + 4-digit + chemical name => AI/LOW candidate.
+  // Reclassify still-UNMATCHED rows into a "possible miss — review" bucket when
+  //   (a) 4-digit + chemical name (dropped leading zero), OR
+  //   (b) the AI hesitated on its "not a match" verdict (MEDIUM/LOW confidence) on a
+  //       chemical-named part — that's exactly where real misses hide.
+  // Everything else stays UNMATCHED, and we clear the AI's negative-verdict confidence
+  // so an unmatched row never displays a match-style score.
   return results.map((r) => {
     if (r.matchType !== "UNMATCHED") return r;
-    const is4digit = /^\d{4}$/.test(String(r.barePartNumber).trim());
     const isChemical = !isMechanicalName(r.partName) && (r.partName || "").trim().length > 0;
-    if (is4digit && isChemical) {
+    const is4digit = /^\d{4}$/.test(String(r.barePartNumber).trim());
+    const aiUnsure = r.confidence === "MEDIUM" || r.confidence === "LOW"; // AI wasn't sure it's a non-MOC part
+    if (isChemical && (is4digit || aiUnsure)) {
       return {
         ...r,
         matchType: "AI",
         confidence: "LOW",
         matchedArchetype: null,
         matchedPartNumber: null,
-        reason:
-          "4-digit number with chemical product name — possible MOC part with dropped leading zero, no archetype on file yet",
+        reason: is4digit
+          ? "4-digit number with a chemical product name — possible MOC part with a dropped leading zero"
+          : "Chemical product name and the AI wasn't confident it's a non-MOC part — flagged as a possible miss to review",
       };
     }
-    return r;
+    return { ...r, confidence: null };
   });
 }

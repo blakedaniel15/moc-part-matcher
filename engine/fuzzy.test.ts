@@ -47,6 +47,18 @@ describe("fuzzyMatch", () => {
   it("2d only fires when the embedded 5 digits are a real archetype", () => {
     expect(fuzzyMatch(part("M999990", "M999990", "MYSTERY GOO"), catalog)).toBeNull();
   });
+
+  it("2e embedded MOC number + strong name corroboration => MEDIUM", () => {
+    // 0121199: contains 01211 (leading) but core/tail-5 both miss it; name corroborates.
+    const cat: Archetype[] = [{ barePartNumber: "01211", manufacturerPart: "01211 - MOTOR OIL CONDITIONER", incentive: 0 }];
+    const r = fuzzyMatch(part("0121199", "0121199", "ENGINE OIL CONDITIONER"), cat);
+    expect(r).toMatchObject({ matchPass: "2e", confidence: "MEDIUM" });
+    expect(r!.archetype.barePartNumber).toBe("01211");
+  });
+  it("2e does NOT fire on a coincidental substring with only a generic word shared", () => {
+    const cat: Archetype[] = [{ barePartNumber: "01211", manufacturerPart: "01211 - MOTOR OIL CONDITIONER", incentive: 0 }];
+    expect(fuzzyMatch(part("0121199", "0121199", "OIL SEAL"), cat)).toBeNull();
+  });
 });
 
 describe("fuzzyMatch 2b store-prefix guard", () => {

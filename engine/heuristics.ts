@@ -70,3 +70,41 @@ export function isMechanicalName(name: string): boolean {
   if (MOC_SAFE_PHRASES.some((p) => upper.includes(p))) return false;
   return MECHANICAL_COMPOUNDS.some((p) => upper.includes(p));
 }
+
+// Packaging / size / filler tokens that don't corroborate a product identity on
+// their own. Everything else (OIL, BRAKE, ATF, CONDITIONER, INJECTOR, …) counts.
+const CORROB_STOP = new Set([
+  "OZ", "GAL", "GALLON", "PK", "QT", "ML", "LB", "PC", "PCS",
+  "KIT", "PREMIUM", "PLUS", "LV", "HP", "MOC", "MP", "NEW", "SET", "PART", "PARTS",
+  "THE", "AND", "FOR", "WITH", "OF", "IN", "A", "SERV", "SERVICE",
+]);
+
+function corrobTokens(s: string): string[] {
+  return String(s || "")
+    .toUpperCase()
+    .split(/[^A-Z0-9]+/)
+    .filter(Boolean)
+    .filter((t) => !/^\d+$/.test(t)) // pure numbers
+    .filter((t) => !/^\d+(OZ|GAL|PK|QT|ML|LB)$/.test(t)) // size codes like 12OZ
+    .filter((t) => !CORROB_STOP.has(t));
+}
+
+// Strong name corroboration between a dealer part name and an archetype's
+// manufacturerPart (which is like "01211 - MOTOR OIL CONDITIONER"). Returns how many
+// MEANINGFUL tokens they share and whether any shared token is distinctive (long).
+// A single generic overlap (e.g. only "OIL") is intentionally weak.
+export function nameCorroboration(partName: string, manufacturerPart: string): { shared: number; distinctive: boolean } {
+  const archName = String(manufacturerPart || "").replace(/^\s*\d{4,5}\s*-\s*/, "");
+  const a = new Set(corrobTokens(archName));
+  let shared = 0;
+  let distinctive = false;
+  const counted = new Set<string>();
+  for (const t of corrobTokens(partName)) {
+    if (a.has(t) && !counted.has(t)) {
+      counted.add(t);
+      shared++;
+      if (t.length >= 7) distinctive = true;
+    }
+  }
+  return { shared, distinctive };
+}
